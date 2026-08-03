@@ -1,0 +1,90 @@
+{
+  "segment": {
+    "segment_id": "SEG_SYN_001",
+    "moderator_question": "What happened after you submitted the request?",
+    "respondent_answer": "I was worried about the delay. Then the team replied, and I felt relieved."
+  },
+  "layers": {
+    "layer1_scope_lock": {
+      "evidence": [
+        {"id": "e1", "quote": "I was worried about the delay."},
+        {"id": "e2", "quote": "Then the team replied, and I felt relieved."}
+      ],
+      "scopes": [
+        {
+          "scope_id": "s1",
+          "object": "I was worried about the delay.",
+          "stance_refs": ["e1"],
+          "context_items": [],
+          "relations_to_prior_scopes": []
+        },
+        {
+          "scope_id": "s2",
+          "object": "Then the team replied, and I felt relieved.",
+          "stance_refs": ["e2"],
+          "context_items": [],
+          "relations_to_prior_scopes": [
+            {"scope_id": "s1", "relation": "independent"}
+          ]
+        }
+      ]
+    },
+    "layer1_1_appraisal": {
+      "scopes": [
+        {
+          "scope_id": "s1",
+          "polarity": "negative",
+          "focus": "threat",
+          "criterion": "possible harm is salient",
+          "support_refs": ["e1"],
+          "confidence": "medium"
+        },
+        {
+          "scope_id": "s2",
+          "polarity": "positive",
+          "focus": "felt_alleviation",
+          "criterion": "an acute burden is described as ended",
+          "support_refs": ["e2"],
+          "confidence": "medium"
+        }
+      ]
+    },
+    "layer2_emotions": {
+      "scopes": [
+        {
+          "scope_id": "s1",
+          "emotion": "fear",
+          "intensity": "high",
+          "confidence": "medium",
+          "evidence_refs": ["e1"]
+        },
+        {
+          "scope_id": "s2",
+          "emotion": "relief",
+          "intensity": "medium",
+          "confidence": "medium",
+          "evidence_refs": ["e2"]
+        }
+      ]
+    },
+    "layer3_segment_review": {
+      "segment_id": "SEG_SYN_001",
+      "question": "What happened after you submitted the request?",
+      "answer": "I was worried about the delay. Then the team replied, and I felt relieved.",
+      "final_emotions": ["fear", "relief"],
+      "primary_emotion": "fear",
+      "review": {
+        "clear": true,
+        "notes": "Final labels are grounded in the validated appraisal scopes.",
+        "scope_count": 2
+      }
+    }
+  },
+  "audits": [
+    {"layer": "layer1_scope_lock", "status": "pass", "issues": []},
+    {"layer": "layer1_1_appraisal", "status": "pass", "issues": []},
+    {"layer": "layer2_emotions", "status": "pass", "issues": []},
+    {"layer": "layer3_segment_review", "status": "pass", "issues": []}
+  ]
+}
+
