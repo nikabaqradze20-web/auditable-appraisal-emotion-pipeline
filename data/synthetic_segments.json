@@ -1,0 +1,28 @@
+[
+  {
+    "segment_id": "SEG_SYN_001",
+    "moderator_question": "What happened after you submitted the request?",
+    "respondent_answer": "I was worried about the delay. Then the team replied, and I felt relieved."
+  },
+  {
+    "segment_id": "SEG_SYN_002",
+    "moderator_question": "How do you see the next few months?",
+    "respondent_answer": "I hope the course opens a better path. I plan to apply when registration starts."
+  },
+  {
+    "segment_id": "SEG_SYN_003",
+    "moderator_question": "Did anything make the process easier?",
+    "respondent_answer": "A support worker helped me understand the form, and I am grateful for that help."
+  },
+  {
+    "segment_id": "SEG_SYN_004",
+    "moderator_question": "What is your overall view of the result?",
+    "respondent_answer": "The new routine works well, and I feel comfortable with it now."
+  },
+  {
+    "segment_id": "SEG_SYN_005",
+    "moderator_question": "What did you learn from the process?",
+    "respondent_answer": "I learned to check the instructions twice before starting."
+  }
+]
+
