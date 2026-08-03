@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "required": ["evidence", "scopes"],
+  "additionalProperties": false,
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "quote"],
+        "additionalProperties": false,
+        "properties": {"id": {"type": "string"}, "quote": {"type": "string"}}
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scope_id", "object", "stance_refs", "context_items", "relations_to_prior_scopes"],
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {"type": "string"},
+          "object": {"type": "string"},
+          "stance_refs": {"type": "array", "items": {"type": "string"}},
+          "context_items": {"type": "array"},
+          "relations_to_prior_scopes": {"type": "array"}
+        }
+      }
+    }
+  }
+}
+
