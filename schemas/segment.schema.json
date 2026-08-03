@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["segment_id", "moderator_question", "respondent_answer"],
+  "additionalProperties": false,
+  "properties": {
+    "segment_id": {"type": "string", "pattern": "^SEG_SYN_[A-Z0-9_]+$"},
+    "moderator_question": {"type": "string", "minLength": 1},
+    "respondent_answer": {"type": "string", "minLength": 1}
+  }
+}
+
