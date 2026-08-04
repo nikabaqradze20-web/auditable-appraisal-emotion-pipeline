@@ -1,27 +1,30 @@
 {
   "segment": {
     "segment_id": "SEG_SYN_001",
-    "moderator_question": "What happened after you submitted the request?",
-    "respondent_answer": "I was worried about the delay. Then the team replied, and I felt relieved."
+    "moderator_question": "How has the housing situation been, and has anything helped?",
+    "respondent_answer": "The office cancelled our flat two weeks after they promised it. They had no right to do that, and we are still in the shelter. My neighbour says the same thing happened to her. A woman from the language school sits with me every Thursday and fills in the forms, otherwise I would not manage."
   },
   "passes": {
     "pass_a_scope_lock": {
       "evidence": [
-        {"id": "e1", "quote": "I was worried about the delay."},
-        {"id": "e2", "quote": "Then the team replied, and I felt relieved."}
+        {"id": "e1", "quote": "The office cancelled our flat two weeks after they promised it"},
+        {"id": "e2", "quote": "They had no right to do that"},
+        {"id": "e3", "quote": "we are still in the shelter"},
+        {"id": "e4", "quote": "A woman from the language school sits with me every Thursday and fills in the forms"},
+        {"id": "e5", "quote": "otherwise I would not manage"}
       ],
       "scopes": [
         {
           "scope_id": "s1",
-          "object": "I was worried about the delay.",
-          "stance_refs": ["e1"],
+          "object": "The office cancelled our flat two weeks after they promised it",
+          "stance_refs": ["e1", "e2", "e3"],
           "context_items": [],
           "relations_to_prior_scopes": []
         },
         {
           "scope_id": "s2",
-          "object": "Then the team replied, and I felt relieved.",
-          "stance_refs": ["e2"],
+          "object": "A woman from the language school sits with me every Thursday and fills in the forms",
+          "stance_refs": ["e4", "e5"],
           "context_items": [],
           "relations_to_prior_scopes": [
             {"scope_id": "s1", "relation": "independent"}
@@ -34,31 +37,31 @@
         {
           "scope_id": "s1",
           "polarity": "negative",
-          "focus": "threat",
-          "criterion": "possible harm is salient",
-          "support_refs": ["e1"],
+          "focus": "blocked_goal",
+          "criterion": "a desired outcome is obstructed",
+          "support_refs": ["e1", "e2", "e3"],
           "confidence": "medium",
           "goal_relevance": "high",
-          "agency": ["circumstance"],
+          "agency": ["other"],
           "certainty": ["certain"],
-          "temporal": ["present"],
-          "coping": "medium",
-          "norm_violation_level": 0,
+          "temporal": ["past", "present"],
+          "coping": "low",
+          "norm_violation_level": 2,
           "self_blame_level": 0,
           "resource_depletion": false
         },
         {
           "scope_id": "s2",
           "polarity": "positive",
-          "focus": "felt_alleviation",
-          "criterion": "an acute burden is described as ended",
-          "support_refs": ["e2"],
+          "focus": "benefactor",
+          "criterion": "another party provided valued help",
+          "support_refs": ["e4", "e5"],
           "confidence": "medium",
           "goal_relevance": "medium",
           "agency": ["other"],
           "certainty": ["certain"],
           "temporal": ["present"],
-          "coping": "medium",
+          "coping": "high",
           "norm_violation_level": 0,
           "self_blame_level": 0,
           "resource_depletion": false
@@ -68,20 +71,21 @@
   },
   "layer2_emotions_draft": {
     "segment_emotions": {
-      "anxiety_fear": 3,
-      "relief_safety": 2
+      "frustration": 3,
+      "anger_indignation": 3,
+      "gratitude": 2
     },
     "per_scope": [
       {
         "scope_id": "s1",
-        "emotions": {"anxiety_fear": 3},
-        "trace": ["focus=threat -> anxiety_fear"],
+        "emotions": {"frustration": 3, "anger_indignation": 3},
+        "trace": ["focus=blocked_goal -> frustration", "gate_anger fired"],
         "errors": []
       },
       {
         "scope_id": "s2",
-        "emotions": {"relief_safety": 2},
-        "trace": ["focus=felt_alleviation -> relief_safety"],
+        "emotions": {"gratitude": 2},
+        "trace": ["focus=benefactor -> gratitude"],
         "errors": []
       }
     ],
@@ -89,11 +93,11 @@
   },
   "layer3_segment_review_draft": {
     "segment_id": "SEG_SYN_001",
-    "question": "What happened after you submitted the request?",
-    "answer": "I was worried about the delay. Then the team replied, and I felt relieved.",
+    "question": "How has the housing situation been, and has anything helped?",
+    "answer": "The office cancelled our flat two weeks after they promised it. They had no right to do that, and we are still in the shelter. My neighbour says the same thing happened to her. A woman from the language school sits with me every Thursday and fills in the forms, otherwise I would not manage.",
     "valence": "mixed",
     "emotion_present": "yes",
-    "final_emotions": ["anxiety_fear", "relief_safety"],
+    "final_emotions": ["frustration", "anger_indignation", "gratitude"],
     "review": {
       "clear": true,
       "note": "The segment contains both negative and positive validated emotions."
