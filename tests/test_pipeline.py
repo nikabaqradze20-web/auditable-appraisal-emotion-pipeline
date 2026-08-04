@@ -5,8 +5,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from emotion_pipeline.contracts import ContractError
+from emotion_pipeline.audits import audit_pass_b
+from emotion_pipeline.contracts import ContractError, Segment
 from emotion_pipeline.pipeline import run_pipeline
+from emotion_pipeline.segment_review import review_segment
+from emotion_pipeline.schema_validation import validate_schema
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "data" / "synthetic_segments.json"
@@ -103,6 +106,45 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(review["valence"], "neutral")
         self.assertEqual(review["emotion_present"], "no")
         self.assertEqual(review["final_emotions"], [])
+
+    def test_pass_b_rejects_polarity_that_contradicts_focus(self):
+        audit = audit_pass_b(
+            {"scopes": [{"scope_id": "s1"}]},
+            {"scopes": [{"scope_id": "s1", "focus": "threat", "polarity": "positive", "support_refs": ["e1"]}]},
+        )
+        self.assertEqual(audit["status"], "fail")
+        self.assertIn("polarity matches focus", audit["issues"])
+
+    def test_pass_b_schema_requires_provisional_appraisal_fields(self):
+        errors = validate_schema(
+            "pass_b_appraisal",
+            {"scopes": [{"scope_id": "s1", "focus": "threat", "polarity": "negative"}]},
+        )
+        self.assertTrue(any("goal_relevance" in error for error in errors))
+
+    def test_layer3_marks_unresolved_layer2_errors_unclear(self):
+        segment = Segment("SEG_SYN_TEST", "What happened?", "Something happened.")
+        review = review_segment(
+            segment,
+            {"segment_emotions": {}, "errors": ["unknown_focus: 'future'" ]},
+        )
+        self.assertFalse(review["review"]["clear"])
+        self.assertEqual(review["review"]["ambiguity_flags"], ["layer2_errors"])
+
+    def test_evidence_extraction_is_not_tuned_to_canonical_quotes(self):
+        alternate = {
+            "segment_id": "SEG_SYN_007",
+            "moderator_question": "What happened with the room?",
+            "respondent_answer": "The office cancelled our room. They had no right, and we are still in the shelter.",
+        }
+        result = run_pipeline(alternate)
+        quotes = [item["quote"] for item in result["passes"]["pass_a_scope_lock"]["evidence"]]
+        self.assertEqual(quotes, [
+            "The office cancelled our room",
+            "They had no right",
+            "we are still in the shelter",
+        ])
+        self.assertEqual(len(result["passes"]["pass_a_scope_lock"]["scopes"]), 1)
 
 
 if __name__ == "__main__":
