@@ -239,7 +239,7 @@ Notable gaps are:
 - structural JSON Schema validation is now executable at every pipeline
   boundary, but semantic annotation rules still need stronger gates;
 - it uses `dissatisfaction` rather than the proposed `mild_dissatisfaction`;
-- it does not yet expose a separately reviewed segment-level valence;
+- it does not yet expose a separately reviewed segment-level summary;
 - its ordinals currently stop below the proposed level 3;
 - fuzzy matching and CORE gates are not fully implemented;
 - the emotion names are simplified (`fear`, `relief`, and so on).
