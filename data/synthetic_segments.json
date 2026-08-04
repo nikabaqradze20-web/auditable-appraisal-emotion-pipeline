@@ -1,8 +1,8 @@
 [
   {
     "segment_id": "SEG_SYN_001",
-    "moderator_question": "What happened after you submitted the request?",
-    "respondent_answer": "I was worried about the delay. Then the team replied, and I felt relieved."
+    "moderator_question": "How has the housing situation been, and has anything helped?",
+    "respondent_answer": "The office cancelled our flat two weeks after they promised it. They had no right to do that, and we are still in the shelter. My neighbour says the same thing happened to her. A woman from the language school sits with me every Thursday and fills in the forms, otherwise I would not manage."
   },
   {
     "segment_id": "SEG_SYN_002",
@@ -23,6 +23,11 @@
     "segment_id": "SEG_SYN_005",
     "moderator_question": "What did you learn from the process?",
     "respondent_answer": "I learned to check the instructions twice before starting."
+  },
+  {
+    "segment_id": "SEG_SYN_006",
+    "moderator_question": "How do you feel about finding work?",
+    "respondent_answer": "I cannot find work. I hope to find something soon."
   }
 ]
 

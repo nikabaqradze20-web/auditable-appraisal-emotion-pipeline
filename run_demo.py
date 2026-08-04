@@ -1,4 +1,4 @@
-"""Run the public synthetic example through all four annotation layers."""
+"""Run the public synthetic examples through Pass A and Pass B."""
 
 from __future__ import annotations
 

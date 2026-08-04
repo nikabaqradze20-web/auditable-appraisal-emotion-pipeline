@@ -1,2 +1,3 @@
-# The public demo uses only the Python standard library.
+# Runtime schema validation for the public contracts.
+jsonschema>=4.25,<5
 

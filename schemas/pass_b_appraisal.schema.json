@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "required": ["scopes"],
+  "additionalProperties": false,
+  "properties": {
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "scope_id", "polarity", "focus", "criterion", "support_refs", "confidence",
+          "goal_relevance", "agency", "certainty", "temporal", "coping",
+          "norm_violation_level", "self_blame_level", "resource_depletion"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {"type": "string"},
+          "polarity": {"enum": ["negative", "positive"]},
+          "focus": {
+            "enum": [
+              "threat", "loss", "blocked_goal", "dissatisfaction",
+              "felt_alleviation", "benefactor", "future_possibility",
+              "specific_object", "general_adequacy"
+            ]
+          },
+          "criterion": {"type": "string", "minLength": 1},
+          "support_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "confidence": {"enum": ["low", "medium", "high"]},
+          "goal_relevance": {"enum": ["low", "medium", "high"]},
+          "agency": {
+            "type": "array",
+            "items": {"enum": ["self", "other", "in_group", "out_group", "circumstance"]},
+            "minItems": 1,
+            "maxItems": 2
+          },
+          "certainty": {
+            "type": "array",
+            "items": {"enum": ["certain", "uncertain", "hypothetical"]},
+            "minItems": 1
+          },
+          "temporal": {
+            "type": "array",
+            "items": {"enum": ["past", "present", "future"]},
+            "minItems": 1
+          },
+          "coping": {"enum": ["zero", "low", "medium", "high"]},
+          "norm_violation_level": {"type": "integer", "minimum": 0, "maximum": 3},
+          "self_blame_level": {"type": "integer", "minimum": 0, "maximum": 3},
+          "resource_depletion": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}
+

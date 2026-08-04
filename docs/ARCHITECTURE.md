@@ -1,53 +1,55 @@
-# Architecture and extension guide
+# Architecture and roadmap
 
-## Data flow
+## Implemented now
 
 ```text
 question + answer
         |
         v
-Layer 1: exact evidence + ordered locked scopes
-        |  audit: quote and assignment integrity
+Pass A: exact evidence + native scope lock
+        | audit: quote and assignment integrity
         v
-Layer 1.1: appraisal polarity, focus, criterion, support
-        |  audit: immutable scope identity
+Pass B: appraisal polarity, focus, criterion, support
+        | audit: immutable scope identity and allowed labels
         v
-Layer 2: emotion, intensity, confidence, evidence refs
-        |  audit: allowed mapping and support integrity
+validated appraisal packet
+        |
         v
-Layer 3: complete segment review and final emotion aggregation
-        |  audit: text preservation and review clarity
+Layer 2 draft: deterministic emotion scoring per scope
+        | audit: identity, errors, and intensity bounds
         v
-traceable segment result
+provisional per-scope and merged emotion profile
 ```
 
-## Stable contracts
+Pass B cannot create, merge, split, reorder, or rename Pass A scopes.
 
-- `segment_id`, question, and answer are input identity.
-- Evidence quotes must be exact substrings of the respondent answer.
-- Evidence IDs are assigned once in Layer 1.
-- Scope IDs are assigned once in Layer 1 and are immutable afterward.
-- Later layers may add annotations but may not create, reorder, merge, or split scopes.
-- Every appraisal and emotion must carry support references.
-- Empty evidence is valid when the answer contains no supported appraisal.
+At each boundary, `src/emotion_pipeline/schema_validation.py` loads the matching
+file from `schemas/` and validates the object before the next audit or layer.
+The schemas are therefore executable contracts, not documentation-only files.
 
-## Current implementation
+Layer 2 is a working draft. Its intensity modifiers, derived gates, and merged
+segment profile need an approved emotion manual and a human-coded gold set
+before they should be treated as reliable.
 
-`src/emotion_pipeline/layers.py` contains transparent keyword rules so the
-workflow runs without an API key. `src/emotion_pipeline/audits.py` implements
-the safety boundary. `run_demo.py` is the public entry point.
+## Design principles
+
+- Evidence before labels.
+- Scope identity is immutable after Pass A.
+- Missing evidence is reported, not silently filled.
+- The moderator question does not create respondent appraisal evidence.
+- LLM output is a noisy measurement, not ground truth.
+- Sensitive source material stays outside the public repository.
 
 ## Model-backed extension
 
-A future adapter can call an LLM at each layer, but it should:
+A future adapter can call an LLM for each pass, but it should keep the prompts
+versioned, require structured JSON, validate every response, and record model
+metadata separately from annotation text. The current deterministic rules are
+only a transparent contract test.
 
-1. keep the prompts in `prompts/` versioned;
-2. require structured JSON matching `schemas/`;
-3. validate each response before passing it forward;
-4. store prompt/model/version metadata outside the text annotations;
-5. never send raw personal data without an approved privacy and retention process.
+## Validation needed before scaling
 
-Before claiming research validity, add independently coded gold-standard data,
-an adjudication protocol, inter-annotator agreement, error analysis, and tests
-for negation, ambiguity, mixed emotions, and long multi-scope answers.
+Add a human-coded gold set containing single-scope, mixed-polarity, temporal,
+coping, agency, blocked-goal, dissatisfaction, and no-appraisal cases. Report
+scope-count agreement, per-label precision/recall, and false-label rates.
 
