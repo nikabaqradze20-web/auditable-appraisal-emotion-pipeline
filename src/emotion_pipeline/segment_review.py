@@ -28,6 +28,7 @@ def review_segment(segment: Segment, emotion_packet: dict[str, Any]) -> dict[str
     """Review the complete Q+A and classify final valence and emotion presence."""
 
     final_emotions = list(emotion_packet.get("segment_emotions", {}))
+    unresolved_errors = list(emotion_packet.get("errors", []))
     negative = bool(set(final_emotions) & NEGATIVE_EMOTIONS)
     positive = bool(set(final_emotions) & POSITIVE_EMOTIONS)
 
@@ -48,6 +49,9 @@ def review_segment(segment: Segment, emotion_packet: dict[str, Any]) -> dict[str
         emotion_present = "yes"
         note = "The segment contains validated positive emotions."
 
+    if unresolved_errors:
+        note = "Layer 2 errors remain unresolved."
+
     return {
         "segment_id": segment.segment_id,
         "question": segment.moderator_question,
@@ -56,7 +60,12 @@ def review_segment(segment: Segment, emotion_packet: dict[str, Any]) -> dict[str
         "emotion_present": emotion_present,
         "final_emotions": final_emotions,
         "review": {
-            "clear": bool(segment.moderator_question.strip() and segment.respondent_answer.strip()),
+            "clear": bool(
+                segment.moderator_question.strip()
+                and segment.respondent_answer.strip()
+                and not unresolved_errors
+            ),
+            "ambiguity_flags": ["layer2_errors"] if unresolved_errors else [],
             "note": note,
         },
     }
