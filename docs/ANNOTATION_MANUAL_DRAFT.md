@@ -30,8 +30,7 @@ answer unless a separate contextual field is explicitly marked as such.
 | --- | --- | --- |
 | 1 | Extract verbatim evidence and create native scopes | Exact evidence and scope rules |
 | 1.1 | Annotate appraisal attributes | Schema and gate validation |
-| 2 | Score emotions scope by scope | CORE gates; no free reinterpretation |
-| 3 | Review the complete question-answer segment | Final aggregation and ambiguity note |
+| 2 | Score scopes and merge active emotion labels | CORE gates; deterministic union/max rule |
 
 The default is **one scope**. Multiple scopes are allowed only when the
 respondent's stance genuinely differs by time, coping, or polarity.
@@ -43,10 +42,6 @@ respondent's stance genuinely differs by time, coping, or polarity.
 | Field | Allowed values | Rule |
 | --- | --- | --- |
 | `goal_relevance` | `low`, `medium`, `high` | Relevance of the answer to the respondent's goal |
-| `valence` | `negative`, `neutral`, `positive`, `mixed` | Must be recoverable from scope-level appraisals |
-
-`mixed` requires at least one positive and one negative scope. Segment valence
-must never contradict the scopes.
 
 ### Scope-level fields
 
@@ -213,11 +208,10 @@ Validators must enforce:
 3. no fused or non-verbatim quotes;
 4. default-one-scope and split-trigger rules;
 5. maximum two agency values;
-6. valence recoverability and mixed-valence requirements;
-7. the three-trigger temporal rule;
-8. `resource_depletion` semantics;
-9. self-blame agency gates;
-10. CORE emotion conditions programmatically.
+6. the three-trigger temporal rule;
+7. `resource_depletion` semantics;
+8. self-blame agency gates;
+9. CORE emotion conditions programmatically.
 
 ## Gold-standard validation
 
@@ -225,7 +219,7 @@ Before scaling, create a human-coded synthetic or de-identified gold set with
 expected outputs for every layer. Include:
 
 - single-scope positive and negative cases;
-- genuine mixed-valence cases;
+- mixed-polarity cases;
 - time changes;
 - coping changes;
 - blocked goal versus dissatisfaction;
@@ -245,7 +239,7 @@ Notable gaps are:
 - structural JSON Schema validation is now executable at every pipeline
   boundary, but semantic annotation rules still need stronger gates;
 - it uses `dissatisfaction` rather than the proposed `mild_dissatisfaction`;
-- it does not yet expose segment-level `valence` and `goal_relevance`;
+- it does not yet expose a separately reviewed segment-level valence;
 - its ordinals currently stop below the proposed level 3;
 - fuzzy matching and CORE gates are not fully implemented;
 - the emotion names are simplified (`fear`, `relief`, and so on).
