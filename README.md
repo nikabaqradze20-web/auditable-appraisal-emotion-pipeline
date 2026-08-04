@@ -1,74 +1,122 @@
-# Auditable appraisal -> emotion pipeline
+# Scope-first appraisal annotation pipeline
 
-This repository is a small, public-safe reference implementation of a four-layer annotation workflow for one moderator question plus one respondent answer.
+This repository is a public-safe, offline prototype for a two-pass LLM
+annotation workflow. It currently implements **Pass A** and **Pass B** only.
 
-The project is intentionally offline and deterministic. It demonstrates the contracts, evidence flow, and audits that a later model-backed implementation can follow. The examples are synthetic and contain no real interview records or personal names.
+The design is deliberately scope-first: every appraisal is attached to an
+exact evidence quote and an immutable native scope. Future emotion scoring will
+read these validated appraisals instead of reinterpreting the raw answer.
 
-## Workflow
+## Current status
 
-1. **Layer 1 - appraisal extraction and scope lock**: extract exact evidence and create ordered independent scopes.
-2. **Layer 1.1 - appraisal-scheme annotation**: classify each locked scope using an explicit appraisal focus and evidence references.
-3. **Layer 2 - emotion annotation**: map validated appraisals to emotions, intensity, confidence, and evidence.
-4. **Layer 3 - segment construction and final review**: inspect the complete question-answer unit and produce final segment-level emotions.
+```text
+Implemented
+  Pass A       evidence extraction + scope lock
+  Pass B       appraisal annotation on locked scopes
+  Layer 2     deterministic emotion scoring draft
+  Layer 3     segment review and valence aggregation draft
 
-Every layer emits an audit. A pipeline run stops if a scope identity changes, a quote is not exact, a label is outside the contract, or evidence is missing.
+Planned
+  Validation  human-coded gold set and error analysis
+```
+
+This is a `v0.1-alpha` research prototype. It does not yet claim emotion
+classification, psychological measurement, or production reliability.
+
+## Why the two-pass design matters
+
+Flat annotation often lets a later emotion label change the interpretation of
+the text. This design creates a checkpoint first:
+
+```text
+respondent answer
+      |
+      v
+Pass A: exact evidence + native scopes
+      |
+      v
+Pass B: appraisal focus and polarity
+      |
+      v
+future Layer 2: emotions
+```
+
+Pass B must preserve the scope IDs and evidence references created by Pass A.
+Layer 2 then maps each validated appraisal to provisional emotions without
+re-reading the evidence text. Layer 3 reviews the complete question-answer unit
+and returns positive, negative, mixed, or neutral valence. Validators stop
+invalid or unsupported outputs before they can flow forward.
+
+## Traceability example
+
+Synthetic segment `SEG_SYN_001` contains two scopes with opposite polarity:
+
+```text
+Question: What happened after you submitted the request?
+Answer:   I was worried about the delay. Then the team replied, and I felt relieved.
+
+e1 -> s1 -> negative / threat           -> anxiety_fear
+e2 -> s2 -> positive / felt_alleviation -> relief_safety
+```
+
+The complete working trace is in
+[`examples/SEG_SYN_001_trace.json`](examples/SEG_SYN_001_trace.json). The
+step-by-step explanation is in [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
+
+For a mixed segment, Layer 3 can return:
+
+```json
+{
+  "valence": "mixed",
+  "emotion_present": "yes",
+  "final_emotions": ["frustration", "hope"]
+}
+```
+
+For a factual neutral answer, it returns `valence: neutral`,
+`emotion_present: no`, and an empty emotion list. It does not invent a neutral
+emotion label.
 
 ## Run it
 
-Requires Python 3.10 or newer and no external packages:
+Requires Python 3.10 or newer. The demo uses only the standard library:
 
 ```text
 python run_demo.py
 python -m unittest discover -s tests -v
 ```
 
-The demo writes `demo_output.json`, which is ignored by Git.
+The demo processes five synthetic segments, writes `demo_output.json`, and
+reports Pass A, Pass B, and draft Layer 2 audit results. The output file is
+ignored by Git.
 
-## Traceability example
+## Repository map
 
-`SEG_SYN_001` demonstrates two scopes with opposite polarity:
-
-```text
-Question: What happened after you submitted the request?
-Answer:   I was worried about the delay. Then the team replied, and I felt relieved.
-
-e1 -> s1 -> negative / threat           -> fear
-e2 -> s2 -> positive / felt_alleviation -> relief
-```
-
-The final Layer 3 segment retains the original question and answer and returns
-`final_emotions: ["fear", "relief"]`. The complete saved trace is in
-[`examples/SEG_SYN_001_trace.json`](examples/SEG_SYN_001_trace.json), and the
-step-by-step explanation is in [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
-
-The identity invariant is simple: Layer 1 creates `scope_id` values; Layers 1.1
-and 2 must return the same IDs in the same order; Layer 3 may aggregate those
-validated results but cannot create an unsupported evidence trail.
-
-## Project layout
-
-- `prompts/` â€” provider-neutral prompt contracts for all four layers.
-- `schemas/` â€” JSON output shapes for each layer.
-- `src/emotion_pipeline/` â€” deterministic reference implementation and audits.
-- `data/synthetic_segments.json` â€” synthetic question-answer fixtures only.
-- `examples/` â€” one committed, fully traceable synthetic pipeline result.
-- `docs/` â€” architecture, traceability, privacy, and extension notes.
-- `tests/` â€” contract and end-to-end tests.
-
-## What this is and is not
-
-This is a reviewable baseline for designing and testing an auditable annotation
-workflow. It is not a validated psychological measurement instrument, a
-production classifier, or a claim that the keyword rules generalize to real
-interviews. The deterministic layer functions make the contracts executable;
-future model-backed implementations must preserve those contracts and pass the
-same audits.
+- `data/` - synthetic question-answer fixtures only.
+- `prompts/` - provider-neutral Pass A, Pass B, and draft Layer 2 contracts.
+- `schemas/` - input and output JSON contracts.
+- `src/emotion_pipeline/` - deterministic reference implementation and audits.
+- `examples/` - committed synthetic trace showing evidence continuity.
+- `docs/` - architecture, traceability, manual draft, and roadmap notes.
+- `tests/` - standard-library tests for the workflow.
 
 ## Privacy boundary
 
-Do not add raw transcripts, exports, API responses, names, emails, locations, or generated pilot workbooks to this repository. Real data should be filtered before entering the pipeline and should remain outside Git. Legacy local pilot artifacts are ignored by `.gitignore` and are not part of the public implementation.
+Do not add raw transcripts, exports, API responses, names, emails, locations,
+or generated pilot workbooks. Real data must remain outside Git and outside the
+synthetic fixtures. The local legacy pilot artifacts are ignored by
+[`.gitignore`](.gitignore).
 
-## Next step for a model-backed version
+## Limitations and next work
 
-Replace the deterministic functions in `src/emotion_pipeline/layers.py` with model calls that return the same JSON contracts. Keep the audits and synthetic tests unchanged; they are the safety boundary between prompts and downstream analysis.
+The current demo uses transparent keyword rules to make the contracts runnable
+without an API key. Layer 2 intensity modifiers, derived gates, and Layer 3
+aggregation are provisional; the project is not a gold standard and has not
+been validated on real interview material.
+
+Before treating emotion scoring or segment valence as reliable, stabilize the
+appraisal manual and create a human-coded gold set. Then validate the draft
+Layer 2 gates and Layer 3 aggregation. See
+[`docs/ANNOTATION_MANUAL_DRAFT.md`](docs/ANNOTATION_MANUAL_DRAFT.md) and
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
