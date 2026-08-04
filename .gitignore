@@ -9,26 +9,17 @@ __pycache__/
 *.pdf
 *.png
 *.jsonl
-/demo_output.json
 
-# Legacy pilot inputs, outputs, and temporary rendering files.
+# Keep local pilot inputs, scripts, exports, and scratch notes out of the
+# public tree without naming private project artifacts in this file.
+/*.py
+!/run_demo.py
+/*.md
+!/README.md
+/*.txt
+/*.json
+/*.csv
 /outputs/
 /sonnet_pilot_output/
 /tmp/
-/build_prompt_a_excel.py
-/diagnose_excel_variants.py
-/render_prompt_a_excel_preview.py
-/run_prompt_a_pilot.py
-/run_sonnet_pilot.py
-/validate_two_pass_annotation.py
-/test_run_prompt_a_pilot.py
-/test_run_sonnet_pilot.py
-/test_validate_two_pass_annotation.py
-/sonnet_pilot_30_segments.csv
-/sonnet_pilot_30_manifest.csv
-/opus_4_8_*.txt
-/opus_4_8_*.json
-/opus_4_8_annotation_redesign.md
-/PILOT_RUNBOOK.md
-/PROMPT_A_RUNBOOK.md
 
