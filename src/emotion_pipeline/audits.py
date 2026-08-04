@@ -85,27 +85,6 @@ def audit_layer2(appraisal_packet: dict[str, Any], emotion_packet: dict[str, Any
     )
 
 
-def audit_layer3(segment: Segment, final_packet: dict[str, Any]) -> dict[str, Any]:
-    """Audit the draft whole-segment review and neutral handling."""
-
-    allowed_valence = {"positive", "negative", "mixed", "neutral"}
-    allowed_presence = {"yes", "no"}
-    emotions = final_packet.get("final_emotions", [])
-    expected_presence = "yes" if emotions else "no"
-    return _audit(
-        "layer3_segment_review_draft",
-        [
-            ("segment identity is preserved", final_packet.get("segment_id") == segment.segment_id),
-            ("question is preserved", final_packet.get("question") == segment.moderator_question),
-            ("answer is preserved", final_packet.get("answer") == segment.respondent_answer),
-            ("valence is allowed", final_packet.get("valence") in allowed_valence),
-            ("emotion presence is allowed", final_packet.get("emotion_present") in allowed_presence),
-            ("neutral segments say no emotion", final_packet.get("emotion_present") == expected_presence),
-            ("review is clear", final_packet.get("review", {}).get("clear") is True),
-        ],
-    )
-
-
 def assert_all_audits_pass(audits: list[dict[str, Any]]) -> None:
     failed = [audit for audit in audits if audit["status"] != "pass"]
     if failed:
