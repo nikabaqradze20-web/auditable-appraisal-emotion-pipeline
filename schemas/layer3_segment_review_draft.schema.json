@@ -11,9 +11,13 @@
     "final_emotions": {"type": "array", "items": {"type": "string"}},
     "review": {
       "type": "object",
-      "required": ["clear", "note"],
+      "required": ["clear", "ambiguity_flags", "note"],
       "additionalProperties": false,
-      "properties": {"clear": {"type": "boolean"}, "note": {"type": "string"}}
+      "properties": {
+        "clear": {"type": "boolean"},
+        "ambiguity_flags": {"type": "array", "items": {"type": "string"}},
+        "note": {"type": "string"}
+      }
     }
   }
 }
