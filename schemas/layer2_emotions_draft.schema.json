@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": ["segment_emotions", "per_scope", "errors"],
+  "additionalProperties": false,
+  "properties": {
+    "segment_emotions": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1, "maximum": 3}},
+    "per_scope": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scope_id", "emotions", "trace", "errors"],
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {"type": ["string", "null"]},
+          "emotions": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1, "maximum": 3}},
+          "trace": {"type": "array", "items": {"type": "string"}},
+          "errors": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}
+
