@@ -23,12 +23,14 @@ This project separates those failure modes:
   references fail validation.
 - **Layer 2 is deterministic.** It reads appraisal codes and does not quietly
   reinterpret the raw answer.
+- **Schemas are executable.** The pipeline loads the JSON Schema files and
+  validates the input and every layer boundary before continuing.
 
 ## Workflow
 
 | Stage | Sees | Emits | Run fails if |
 | --- | --- | --- | --- |
-| Pass A - evidence and scope lock | question + answer | exact evidence spans and ordered scopes | a quote is not source text or evidence is unassigned |
+| Pass A - evidence and scope lock | question + answer | exact evidence spans and ordered scopes | a quote is not source text, evidence is unassigned, or the schema fails |
 | Pass B - appraisal coding | locked scopes and evidence | focus, polarity, agency, temporal, certainty, coping, ordinals | scope identity changes or a value is outside the contract |
 | Layer 2 - emotion mapping | validated appraisal codes | per-scope emotions, intensity, and trace | a focus is unknown or scoring errors remain |
 | Layer 3 - segment review | complete question-answer plus merged emotions | final emotions, valence, and emotion presence | question-answer text changes or neutral handling is wrong |
@@ -36,6 +38,9 @@ This project separates those failure modes:
 The current implementation is a working draft. Intensity modifiers, derived
 emotion gates, and Layer 3 aggregation still require validation against a
 human-coded gold set.
+
+The built-in evidence splitter uses generic sentence and conjunction rules. The
+canonical example is a teaching fixture, not a set of special-case phrases.
 
 ## Traceability example
 
@@ -108,12 +113,14 @@ receives an invented neutral emotion.
 
 ## Run it
 
-Requires Python 3.10 or newer. No external packages are required:
+Requires Python 3.10 or newer and the `jsonschema` package:
 
 ```text
 python run_demo.py
 python -m unittest discover -s tests -v
 ```
+
+Install the runtime dependency with `pip install -r requirements.txt`.
 
 The demo processes six synthetic segments and writes the ignored file
 `demo_output.json`.
@@ -133,7 +140,7 @@ The demo processes six synthetic segments and writes the ignored file
 ## What this is and is not
 
 **Is:** a reviewable baseline for an auditable annotation workflow with
-executable interface contracts.
+executable interface contracts and runtime schema checks.
 
 **Is not:** a validated measurement instrument, a production classifier, or
 evidence that keyword rules generalize. Any real use requires a human-coded
