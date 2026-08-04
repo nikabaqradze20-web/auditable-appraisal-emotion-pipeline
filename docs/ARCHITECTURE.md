@@ -18,7 +18,7 @@ validated appraisal packet
 Layer 2 draft: deterministic emotion scoring per scope
         | audit: identity, errors, and intensity bounds
         v
-provisional emotion profile
+provisional per-scope and merged emotion profile
 ```
 
 Pass B cannot create, merge, split, reorder, or rename Pass A scopes.
@@ -27,22 +27,9 @@ At each boundary, `src/emotion_pipeline/schema_validation.py` loads the matching
 file from `schemas/` and validates the object before the next audit or layer.
 The schemas are therefore executable contracts, not documentation-only files.
 
-## Layer 3 currently implemented
-
-```text
-provisional emotion profile
-        |
-        v
-Layer 3 draft: whole-segment review and valence aggregation
-```
-
-Layer 2 and Layer 3 are working drafts. Their intensity modifiers, derived
-gates, and valence aggregation need an approved emotion manual and a human-coded
-gold set before they should be treated as reliable.
-
-Layer 3 sets `review.clear` to false when Layer 2 returns unresolved errors and
-records `layer2_errors` in `review.ambiguity_flags`. Semantic ambiguity detection
-from the text itself remains a future research feature.
+Layer 2 is a working draft. Its intensity modifiers, derived gates, and merged
+segment profile need an approved emotion manual and a human-coded gold set
+before they should be treated as reliable.
 
 ## Design principles
 
