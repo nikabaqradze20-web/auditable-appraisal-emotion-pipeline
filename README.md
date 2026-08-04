@@ -72,7 +72,6 @@ Trace:
 ```text
 e1,e2,e3 -> s1 -> blocked_goal / other / past+present / coping low
                   norm_violation_level 2
-                  -> frustration (3)
                   -> anger_indignation (3), derived by gate
 
 e4,e5     -> s2 -> benefactor / other / present / coping high
