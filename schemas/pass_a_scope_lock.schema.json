@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "required": ["evidence", "scopes"],
+  "additionalProperties": false,
+  "properties": {
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "quote"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^e[1-9][0-9]*$"},
+          "quote": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scope_id", "object", "stance_refs", "context_items", "relations_to_prior_scopes"],
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {"type": "string", "pattern": "^s[1-9][0-9]*$"},
+          "object": {"type": "string", "minLength": 1},
+          "stance_refs": {"type": "array", "items": {"type": "string"}},
+          "context_items": {"type": "array"},
+          "relations_to_prior_scopes": {"type": "array"}
+        }
+      }
+    }
+  }
+}
+
