@@ -2,8 +2,8 @@
 
 The functions are intentionally conservative. They are a runnable baseline for
 testing scope and appraisal contracts, not a replacement for human annotation
-or an LLM-based production annotator. Emotion scoring and segment aggregation
-are intentionally not implemented yet.
+or an LLM-based production annotator. The evidence splitter uses generic
+sentence and clause rules; it is not tuned to one fixture's exact wording.
 """
 
 from __future__ import annotations
@@ -39,24 +39,23 @@ RELEVANCE_BY_FOCUS = {
 }
 
 def split_sentences(text: str) -> list[str]:
-    return [part.strip() for part in re.split(r"(?<=[.!?])\s+", text.strip()) if part.strip()]
-
-
-SPECIAL_EVIDENCE_PHRASES = (
-    "The office cancelled our flat two weeks after they promised it",
-    "They had no right to do that",
-    "we are still in the shelter",
-    "A woman from the language school sits with me every Thursday and fills in the forms",
-    "otherwise I would not manage",
-)
+    return [
+        part.strip().rstrip(".!?")
+        for part in re.split(r"(?<=[.!?])\s+", text.strip())
+        if part.strip()
+    ]
 
 
 def _evidence_units(sentence: str) -> list[str]:
-    """Split known synthetic teaching phrases into exact evidence spans."""
+    """Split a sentence into evidence-bearing clauses when conjunctions mark them."""
 
-    found = [phrase for phrase in SPECIAL_EVIDENCE_PHRASES if phrase in sentence]
-    if found:
-        return sorted(found, key=sentence.index)
+    clauses = [
+        re.sub(r"^(?:and|but)\s+", "", part.strip(), flags=re.IGNORECASE)
+        for part in re.split(r",\s+(?=(?:and|but|otherwise)\b)", sentence)
+        if part.strip()
+    ]
+    if len(clauses) > 1 and any(_matching_rules(clause) for clause in clauses):
+        return clauses
     return [sentence]
 
 
