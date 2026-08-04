@@ -27,7 +27,6 @@ class PipelineTests(unittest.TestCase):
             )
             self.assertTrue(all(audit["status"] == "pass" for audit in result["audits"]))
             self.assertIn("layer2_emotions_draft", result)
-            self.assertTrue(all(audit["status"] == "pass" for audit in result["audits"]))
 
     def test_empty_appraisal_is_allowed(self):
         result = run_pipeline(self.records[-2])
