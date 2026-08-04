@@ -77,6 +77,11 @@ Layer 3 reviews the complete question-answer unit and returns:
 }
 ```
 
+The complete review also includes `review.clear: true` and an empty
+`review.ambiguity_flags` list. If Layer 2 has unresolved errors, Layer 3 keeps
+the partial result visible but sets `clear: false` and records
+`layer2_errors`; it does not silently present the result as settled.
+
 For a factual answer with no scopes, Layer 3 returns `valence: neutral`,
 `emotion_present: no`, and `final_emotions: []`.
 
