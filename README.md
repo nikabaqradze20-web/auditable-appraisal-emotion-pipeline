@@ -1,7 +1,8 @@
 # Scope-first appraisal annotation pipeline
 
-This repository is a public-safe, offline prototype for a two-pass LLM
-annotation workflow. It currently implements **Pass A** and **Pass B** only.
+This repository is a public-safe, offline prototype for a scope-first annotation
+workflow. It implements Pass A, Pass B, deterministic Layer 2 emotion scoring,
+and draft Layer 3 segment review.
 
 The design is deliberately scope-first: every appraisal is attached to an
 exact evidence quote and an immutable native scope. Future emotion scoring will
@@ -38,7 +39,10 @@ Pass A: exact evidence + native scopes
 Pass B: appraisal focus and polarity
       |
       v
-future Layer 2: emotions
+Layer 2: deterministic emotions
+      |
+      v
+Layer 3: segment valence and final review
 ```
 
 Pass B must preserve the scope IDs and evidence references created by Pass A.
@@ -86,7 +90,7 @@ python run_demo.py
 python -m unittest discover -s tests -v
 ```
 
-The demo processes five synthetic segments, writes `demo_output.json`, and
+The demo processes six synthetic segments, writes `demo_output.json`, and
 reports Pass A, Pass B, and draft Layer 2 audit results. The output file is
 ignored by Git.
 
