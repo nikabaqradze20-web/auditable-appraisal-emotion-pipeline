@@ -1,91 +1,93 @@
-# Two-pass traceability walkthrough
+# Traceability walkthrough
 
-This document follows one synthetic segment through the implemented workflow.
-Pass A and Pass B are the appraisal foundation. Layer 2 is a deterministic
-working draft; Layer 3 segment aggregation is not implemented yet.
+This walkthrough uses `SEG_SYN_001`, the canonical synthetic example. It is
+chosen to show scope grouping, exclusion of third-party reports, derived anger,
+benefactor gratitude, and mixed segment valence.
 
-## Input unit
+## Input
 
 ```text
-segment_id: SEG_SYN_001
-question:   What happened after you submitted the request?
-answer:     I was worried about the delay. Then the team replied, and I felt relieved.
+Question: How has the housing situation been, and has anything helped?
+Answer:   The office cancelled our flat two weeks after they promised it.
+          They had no right to do that, and we are still in the shelter.
+          My neighbour says the same thing happened to her. A woman from
+          the language school sits with me every Thursday and fills in the
+          forms, otherwise I would not manage.
 ```
-
-The question supplies context. Evidence comes from the respondent answer.
 
 ## Pass A: evidence and scope lock
 
-Pass A extracts exact, contiguous quotes and creates native scopes in order:
+Pass A extracts these evidence spans:
 
-| Evidence | Exact quote | Scope |
+| Ref | Span | Scope |
 | --- | --- | --- |
-| `e1` | `I was worried about the delay.` | `s1` |
-| `e2` | `Then the team replied, and I felt relieved.` | `s2` |
+| `e1` | `The office cancelled our flat two weeks after they promised it` | `s1` |
+| `e2` | `They had no right to do that` | `s1` |
+| `e3` | `we are still in the shelter` | `s1` |
+| `e4` | `A woman from the language school sits with me every Thursday and fills in the forms` | `s2` |
+| `e5` | `otherwise I would not manage` | `s2` |
 
-The answer contains a negative worry and a later positive relief response, so
-two scopes are justified. `s2` records its independent relation to `s1`.
+The sentence `My neighbour says the same thing happened to her` is not
+extracted. It reports another person's experience and does not express the
+respondent's own stance.
 
-## Pass B: appraisal annotation
+Pass A groups `e1,e2,e3` into one housing-obstacle scope and `e4,e5` into one
+benefactor scope. It does not split on punctuation or create a scope for the
+third-party report.
 
-Pass B keeps the scope IDs and attaches appraisal labels:
+## Pass B: appraisal coding
 
-| Scope | Polarity | Focus | Criterion | Support |
-| --- | --- | --- | --- | --- |
-| `s1` | `negative` | `threat` | possible harm is salient | `e1` |
-| `s2` | `positive` | `felt_alleviation` | acute burden described as ended | `e2` |
+| Scope | Focus | Agency | Temporal | Coping | Ordinals |
+| --- | --- | --- | --- | --- | --- |
+| `s1` | `blocked_goal` | `other` | `past`, `present` | `low` | norm violation `2` |
+| `s2` | `benefactor` | `other` | `present` | `high` | `0` |
 
-The trace is therefore:
+## Layer 2: deterministic emotion mapping
+
+Layer 2 reads only the Pass B codes:
 
 ```text
-e1 -> s1 -> negative / threat
-e2 -> s2 -> positive / felt_alleviation
+s1 -> blocked_goal -> frustration (intensity 3)
+s1 -> norm violation >= 2 + other agency -> anger_indignation (3)
+s2 -> benefactor -> gratitude (2)
 ```
 
-## Layer 2 draft: deterministic emotion scoring
-
-Layer 2 reads only the validated Pass B scopes. It produces:
-
-| Scope | Core emotion | Intensity |
-| --- | --- | --- |
-| `s1` / `threat` | `anxiety_fear` | `3` |
-| `s2` / `felt_alleviation` | `relief_safety` | `2` |
-
-The merged segment profile is:
+The merged profile is:
 
 ```json
-{"anxiety_fear": 3, "relief_safety": 2}
+{
+  "frustration": 3,
+  "anger_indignation": 3,
+  "gratitude": 2
+}
 ```
 
-The result is provisional. The intensity formula and derived gates must be
-tested against a human-coded gold set.
+`anger_indignation` is additive and gate-derived. It is not a direct mapping
+from the `blocked_goal` focus.
 
-## Audit gates
+## Layer 3: segment review
 
-The current implementation records three audits:
-
-1. Pass A checks exact quotes, unique evidence IDs, and complete evidence assignment.
-2. Pass B checks immutable scope identity, allowed focus labels, and support references.
-3. Layer 2 checks immutable scope identity, scoring errors, and intensity bounds.
-
-The machine-readable result is
-[`examples/SEG_SYN_001_trace.json`](../examples/SEG_SYN_001_trace.json). A test
-re-runs the pipeline and compares it with this committed trace.
-
-## Layer 3 draft: segment review
-
-Layer 3 reviews the full question-answer segment and uses the merged Layer 2
-profile:
+Layer 3 reviews the complete question-answer unit and returns:
 
 ```json
 {
   "valence": "mixed",
   "emotion_present": "yes",
-  "final_emotions": ["anxiety_fear", "relief_safety"]
+  "final_emotions": ["frustration", "anger_indignation", "gratitude"]
 }
 ```
 
-When Layer 2 returns no emotions, Layer 3 returns `valence: neutral`,
-`emotion_present: no`, and `final_emotions: []`. Layer 3 is still a draft and
-needs validation against human-coded examples.
+For a factual answer with no scopes, Layer 3 returns `valence: neutral`,
+`emotion_present: no`, and `final_emotions: []`.
+
+## Why this example matters
+
+1. It contains no explicit emotion words.
+2. It demonstrates a derived emotion gate.
+3. It shows that a relevant third-party sentence can remain uncoded.
+4. It shows two genuine appraisal situations rather than one scope per sentence.
+
+The committed machine-readable result is
+[`examples/SEG_SYN_001_trace.json`](../examples/SEG_SYN_001_trace.json). A test
+re-runs the pipeline and compares the result with this file.
 
