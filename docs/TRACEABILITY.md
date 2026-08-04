@@ -2,7 +2,7 @@
 
 This walkthrough uses `SEG_SYN_001`, the canonical synthetic example. It is
 chosen to show scope grouping, exclusion of third-party reports, derived anger,
-benefactor gratitude, and mixed segment valence.
+benefactor gratitude, and a merged emotion profile.
 
 ## Input
 
@@ -65,25 +65,24 @@ The merged profile is:
 `anger_indignation` is additive and gate-derived. It is not a direct mapping
 from the `blocked_goal` focus.
 
-## Layer 3: segment review
+## Merged Layer 2 profile
 
-Layer 3 reviews the complete question-answer unit and returns:
+Layer 2 scores each appraisal scope independently, then merges active labels by
+union and keeps the maximum intensity per label:
 
 ```json
 {
-  "valence": "mixed",
-  "emotion_present": "yes",
-  "final_emotions": ["frustration", "anger_indignation", "gratitude"]
+  "segment_emotions": {
+    "frustration": 3,
+    "anger_indignation": 3,
+    "gratitude": 2
+  }
 }
 ```
 
-The complete review also includes `review.clear: true` and an empty
-`review.ambiguity_flags` list. If Layer 2 has unresolved errors, Layer 3 keeps
-the partial result visible but sets `clear: false` and records
-`layer2_errors`; it does not silently present the result as settled.
-
-For a factual answer with no scopes, Layer 3 returns `valence: neutral`,
-`emotion_present: no`, and `final_emotions: []`.
+An empty scope list produces `{}`. No separate segment-review layer is used in
+this version; segment-level aggregation ends with the deterministic Layer 2
+profile.
 
 ## Why this example matters
 
