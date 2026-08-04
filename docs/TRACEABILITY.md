@@ -1,11 +1,10 @@
-# Traceability walkthrough
+# Two-pass traceability walkthrough
 
-This document follows one synthetic segment through every layer. The purpose is
-to make the evidence chain inspectable by a reviewer.
+This document follows one synthetic segment through the implemented workflow.
+Pass A and Pass B are the appraisal foundation. Layer 2 is a deterministic
+working draft; Layer 3 segment aggregation is not implemented yet.
 
 ## Input unit
-
-The unit of analysis is one moderator question plus one respondent answer:
 
 ```text
 segment_id: SEG_SYN_001
@@ -13,88 +12,80 @@ question:   What happened after you submitted the request?
 answer:     I was worried about the delay. Then the team replied, and I felt relieved.
 ```
 
-The moderator question provides context only. Appraisal evidence must come from
-the respondent answer.
+The question supplies context. Evidence comes from the respondent answer.
 
-## Layer 1: extraction and scope lock
+## Pass A: evidence and scope lock
 
-Layer 1 extracts exact contiguous quotes. It creates one scope for each
-independent respondent stance and keeps scopes in evidence order.
+Pass A extracts exact, contiguous quotes and creates native scopes in order:
 
-| Evidence | Exact quote | Locked scope |
+| Evidence | Exact quote | Scope |
 | --- | --- | --- |
 | `e1` | `I was worried about the delay.` | `s1` |
 | `e2` | `Then the team replied, and I felt relieved.` | `s2` |
 
-`s2` records that it follows `s1` as an independent scope. The relation is
-structural; it does not alter the text or merge the scopes.
+The answer contains a negative worry and a later positive relief response, so
+two scopes are justified. `s2` records its independent relation to `s1`.
 
-```json
-{
-  "scopes": [
-    {"scope_id": "s1", "stance_refs": ["e1"]},
-    {"scope_id": "s2", "stance_refs": ["e2"], "relations_to_prior_scopes": [
-      {"scope_id": "s1", "relation": "independent"}
-    ]}
-  ]
-}
-```
+## Pass B: appraisal annotation
 
-## Layer 1.1: appraisal scheme
-
-The appraisal layer cannot create new scopes. It annotates the locked IDs:
+Pass B keeps the scope IDs and attaches appraisal labels:
 
 | Scope | Polarity | Focus | Criterion | Support |
 | --- | --- | --- | --- | --- |
 | `s1` | `negative` | `threat` | possible harm is salient | `e1` |
-| `s2` | `positive` | `felt_alleviation` | an acute burden is described as ended | `e2` |
+| `s2` | `positive` | `felt_alleviation` | acute burden described as ended | `e2` |
 
-The negative and positive appraisals remain separate because the answer
-contains both an earlier worry and a later relief response.
+The trace is therefore:
 
-## Layer 2: emotion annotation
-
-Layer 2 maps each validated appraisal to an emotion while preserving the scope
-and evidence references:
-
-| Scope | Appraisal | Emotion | Intensity | Evidence |
-| --- | --- | --- | --- | --- |
-| `s1` | `threat` | `fear` | `high` | `e1` |
-| `s2` | `felt_alleviation` | `relief` | `medium` | `e2` |
-
-## Layer 3: segment construction and final review
-
-The final reviewer sees the complete question-answer unit and the validated
-emotion scopes. It preserves the input text and aggregates the distinct final
-emotions:
-
-```json
-{
-  "segment_id": "SEG_SYN_001",
-  "final_emotions": ["fear", "relief"],
-  "primary_emotion": "fear",
-  "review": {
-    "clear": true,
-    "scope_count": 2
-  }
-}
+```text
+e1 -> s1 -> negative / threat
+e2 -> s2 -> positive / felt_alleviation
 ```
 
-`primary_emotion` is a demo aggregation rule, not a psychological truth claim.
-A production study should define that rule with an annotation manual and human
-review.
+## Layer 2 draft: deterministic emotion scoring
+
+Layer 2 reads only the validated Pass B scopes. It produces:
+
+| Scope | Core emotion | Intensity |
+| --- | --- | --- |
+| `s1` / `threat` | `anxiety_fear` | `3` |
+| `s2` / `felt_alleviation` | `relief_safety` | `2` |
+
+The merged segment profile is:
+
+```json
+{"anxiety_fear": 3, "relief_safety": 2}
+```
+
+The result is provisional. The intensity formula and derived gates must be
+tested against a human-coded gold set.
 
 ## Audit gates
 
-The pipeline records four pass/fail audits:
+The current implementation records three audits:
 
-1. Layer 1 checks exact quotes, unique evidence IDs, and complete evidence assignment.
-2. Layer 1.1 checks immutable scope identity, allowed focus labels, and appraisal support.
-3. Layer 2 checks immutable scope identity, allowed emotion mappings, and evidence references.
-4. Layer 3 checks preserved question-answer text, segment identity, and review clarity.
+1. Pass A checks exact quotes, unique evidence IDs, and complete evidence assignment.
+2. Pass B checks immutable scope identity, allowed focus labels, and support references.
+3. Layer 2 checks immutable scope identity, scoring errors, and intensity bounds.
 
-The committed machine-readable result is
+The machine-readable result is
 [`examples/SEG_SYN_001_trace.json`](../examples/SEG_SYN_001_trace.json). A test
-re-runs the pipeline and compares it with that example so documentation cannot
-drift silently from the implementation.
+re-runs the pipeline and compares it with this committed trace.
+
+## Layer 3 draft: segment review
+
+Layer 3 reviews the full question-answer segment and uses the merged Layer 2
+profile:
+
+```json
+{
+  "valence": "mixed",
+  "emotion_present": "yes",
+  "final_emotions": ["anxiety_fear", "relief_safety"]
+}
+```
+
+When Layer 2 returns no emotions, Layer 3 returns `valence: neutral`,
+`emotion_present: no`, and `final_emotions: []`. Layer 3 is still a draft and
+needs validation against human-coded examples.
 
