@@ -61,7 +61,7 @@ class PipelineTests(unittest.TestCase):
         layer2 = result["layer2_emotions_draft"]
         self.assertEqual(
             layer2["segment_emotions"],
-            {"anxiety_fear": 3, "relief_safety": 2},
+            {"frustration": 3, "anger_indignation": 3, "gratitude": 2},
         )
         self.assertEqual(
             [scope["scope_id"] for scope in layer2["per_scope"]],
