@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "required": ["scopes"],
+  "additionalProperties": false,
+  "properties": {
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scope_id", "polarity", "focus", "criterion", "support_refs", "confidence"],
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {"type": "string"},
+          "polarity": {"enum": ["negative", "positive"]},
+          "focus": {
+            "enum": [
+              "threat", "loss", "blocked_goal", "dissatisfaction",
+              "felt_alleviation", "benefactor", "future_possibility",
+              "specific_object", "general_adequacy"
+            ]
+          },
+          "criterion": {"type": "string", "minLength": 1},
+          "support_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "confidence": {"enum": ["low", "medium", "high"]}
+        }
+      }
+    }
+  }
+}
+
