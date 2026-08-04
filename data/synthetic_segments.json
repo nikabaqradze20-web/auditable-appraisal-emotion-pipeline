@@ -23,6 +23,11 @@
     "segment_id": "SEG_SYN_005",
     "moderator_question": "What did you learn from the process?",
     "respondent_answer": "I learned to check the instructions twice before starting."
+  },
+  {
+    "segment_id": "SEG_SYN_006",
+    "moderator_question": "How do you feel about finding work?",
+    "respondent_answer": "I cannot find work. I hope to find something soon."
   }
 ]
 
