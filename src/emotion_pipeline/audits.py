@@ -8,6 +8,16 @@ from .contracts import ContractError, Segment
 from .layers import FOCUS_RULES
 
 
+NEGATIVE_FOCI = {"threat", "loss", "blocked_goal", "dissatisfaction"}
+POSITIVE_FOCI = {
+    "felt_alleviation",
+    "benefactor",
+    "future_possibility",
+    "specific_object",
+    "general_adequacy",
+}
+
+
 def _audit(name: str, checks: list[tuple[str, bool]]) -> dict[str, Any]:
     issues = [message for message, passed in checks if not passed]
     return {"layer": name, "status": "pass" if not issues else "fail", "issues": issues}
@@ -34,11 +44,22 @@ def audit_pass_b(scope_packet: dict[str, Any], appraisal_packet: dict[str, Any])
     scope_ids = [scope.get("scope_id") for scope in scope_packet.get("scopes", [])]
     appraisal_ids = [scope.get("scope_id") for scope in appraisal_packet.get("scopes", [])]
     allowed_focus = {focus for focus, *_ in FOCUS_RULES}
+
+    def polarity_matches_focus(scope: dict[str, Any]) -> bool:
+        focus = scope.get("focus")
+        polarity = scope.get("polarity")
+        if focus in NEGATIVE_FOCI:
+            return polarity == "negative"
+        if focus in POSITIVE_FOCI:
+            return polarity == "positive"
+        return False
+
     return _audit(
         "pass_b_appraisal",
         [
             ("scope identity is immutable", scope_ids == appraisal_ids),
             ("focus labels are allowed", all(scope.get("focus") in allowed_focus for scope in appraisal_packet.get("scopes", []))),
+            ("polarity matches focus", all(polarity_matches_focus(scope) for scope in appraisal_packet.get("scopes", []))),
             ("support references are non-empty", all(scope.get("support_refs") for scope in appraisal_packet.get("scopes", []))),
         ],
     )
