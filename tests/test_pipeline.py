@@ -36,6 +36,13 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result["passes"]["pass_b_appraisal"]["scopes"], [])
         self.assertEqual(result["layer2_emotions_draft"]["segment_emotions"], {})
 
+    def test_public_pipeline_ends_at_layer2(self):
+        result = run_pipeline(self.records[0])
+        self.assertEqual(
+            set(result),
+            {"segment", "passes", "layer2_emotions_draft", "audits"},
+        )
+
     def test_scope_identity_is_preserved_across_layers(self):
         result = run_pipeline(self.records[0])
         scope_ids = [item["scope_id"] for item in result["passes"]["pass_a_scope_lock"]["scopes"]]
