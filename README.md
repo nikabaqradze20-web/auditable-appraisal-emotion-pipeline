@@ -9,6 +9,10 @@ classifier**. The layer functions are deterministic and offline so the
 interfaces can be executed and tested before any model is attached. All
 fixtures are synthetic.
 
+Current public release scope: Pass A evidence and scope locking, Pass B
+appraisal coding, and deterministic Layer 2 emotion mapping. The pipeline ends
+with the merged `segment_emotions` profile.
+
 ## Why staged, and why audited
 
 A single-prompt "text -> emotions" call is difficult to audit. When a label is
@@ -72,6 +76,7 @@ Trace:
 ```text
 e1,e2,e3 -> s1 -> blocked_goal / other / past+present / coping low
                   norm_violation_level 2
+                  -> frustration (3)
                   -> anger_indignation (3), derived by gate
 
 e4,e5     -> s2 -> benefactor / other / present / coping high
