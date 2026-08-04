@@ -33,11 +33,10 @@ This project separates those failure modes:
 | Pass A - evidence and scope lock | question + answer | exact evidence spans and ordered scopes | a quote is not source text, evidence is unassigned, or the schema fails |
 | Pass B - appraisal coding | locked scopes and evidence | focus, polarity, agency, temporal, certainty, coping, ordinals | scope identity changes or a value is outside the contract |
 | Layer 2 - emotion mapping | validated appraisal codes | per-scope emotions, intensity, and trace | a focus is unknown or scoring errors remain |
-| Layer 3 - segment review | complete question-answer plus merged emotions | final emotions, valence, and emotion presence | question-answer text changes or neutral handling is wrong |
 
 The current implementation is a working draft. Intensity modifiers, derived
-emotion gates, and Layer 3 aggregation still require validation against a
-human-coded gold set.
+emotion gates, and the merged segment profile still require validation against
+a human-coded gold set.
 
 The built-in evidence splitter uses generic sentence and conjunction rules. The
 canonical example is a teaching fixture, not a set of special-case phrases.
@@ -79,9 +78,7 @@ e1,e2,e3 -> s1 -> blocked_goal / other / past+present / coping low
 e4,e5     -> s2 -> benefactor / other / present / coping high
                   -> gratitude (2)
 
-final_emotions: ["frustration", "anger_indignation", "gratitude"]
-valence: mixed
-emotion_present: yes
+segment_emotions: {"frustration": 3, "anger_indignation": 3, "gratitude": 2}
 ```
 
 The saved trace is [`examples/SEG_SYN_001_trace.json`](examples/SEG_SYN_001_trace.json).
@@ -129,9 +126,9 @@ The demo processes six synthetic segments and writes the ignored file
 
 | Path | Contents |
 | --- | --- |
-| `prompts/` | provider-neutral contracts for Pass A, Pass B, Layer 2, and Layer 3 |
+| `prompts/` | provider-neutral contracts for Pass A, Pass B, and Layer 2 |
 | `schemas/` | JSON contracts for each boundary |
-| `src/emotion_pipeline/` | deterministic passes, scoring, audits, and review |
+| `src/emotion_pipeline/` | deterministic passes, scoring, audits, and schema validation |
 | `data/` | synthetic question-answer fixtures |
 | `examples/` | committed end-to-end trace |
 | `docs/` | architecture, traceability, and annotation manual draft |
