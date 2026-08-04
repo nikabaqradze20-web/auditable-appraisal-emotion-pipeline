@@ -242,6 +242,8 @@ false emotion firing. Do not report only overall accuracy.
 The repository's current demo does **not** yet implement every rule above.
 Notable gaps are:
 
+- structural JSON Schema validation is now executable at every pipeline
+  boundary, but semantic annotation rules still need stronger gates;
 - it uses `dissatisfaction` rather than the proposed `mild_dissatisfaction`;
 - it does not yet expose segment-level `valence` and `goal_relevance`;
 - its ordinals currently stop below the proposed level 3;
