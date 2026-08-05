@@ -1,34 +1,100 @@
 # Auditable appraisal -> emotion pipeline
 
-A small, public-safe reference implementation of a staged annotation workflow
-that turns one moderator question plus one respondent answer into segment-level
-emotion labels, with a complete evidence trail from quote to label.
+A public-safe reference implementation of a layered annotation workflow for
+detecting emotions in segments from interview data. The pipeline creates a
+traceable path from exact textual evidence to appraisal codes and, finally, to
+segment-level emotion labels.
 
-The point of this repository is **the contracts and the audits, not the
-classifier**. The layer functions are deterministic and offline so the
-interfaces can be executed and tested before any model is attached. All
-fixtures are synthetic.
+The purpose of the repository is not to present a finished emotion classifier.
+It demonstrates how a complex annotation task can be divided into narrower,
+auditable stages with explicit schemas, validation rules, and evidence
+requirements.
 
-Current public release scope: Pass A evidence and scope locking, Pass B
-appraisal coding, and deterministic Layer 2 emotion mapping. The pipeline ends
-with the merged `segment_emotions` profile.
+## Problem
+
+Emotion detection in segments from interview data is difficult because emotions
+are often expressed indirectly, depend on context, and may be mixed within the
+same segment.
+
+The broader research project contains approximately 8,000 interview segments,
+but it does not yet have a sufficiently large set of reliably human-labelled
+segments to train and validate a supervised machine-learning classifier.
+
+Large language models provide a practical alternative because they can interpret
+context without requiring a large labelled training set. However, asking a model
+to assign emotions directly in a single step creates another problem: the output
+is difficult to audit and reproduce.
+
+When a label is wrong, it may be unclear whether the model:
+
+- selected the wrong evidence;
+- incorrectly divided the segment into situations;
+- misinterpreted the respondent's appraisal;
+- or applied the wrong emotion rule.
+
+## Approach
+
+The workflow therefore decomposes annotation into several narrower tasks:
+
+1. extract exact evidence from the respondent's answer;
+2. identify and lock distinct appraisal scopes;
+3. code the appraisal dimensions within each scope;
+4. map the validated appraisal codes to emotions;
+5. aggregate scope-level emotions into a segment-level profile.
+
+Each stage has a concrete responsibility and a structured output contract.
+Later stages cannot silently rewrite the evidence or change the scopes created
+earlier in the pipeline.
+
+This design aims to reduce error propagation, make disagreements easier to
+diagnose, and improve the reproducibility and reliability of the annotation
+process.
+
+The LLM is treated as a constrained annotator within an auditable workflow,
+rather than as an opaque end-to-end emotion classifier.
+
+## Research context
+
+This repository is based on an ongoing research project developing an
+AI-assisted annotation pipeline for approximately 8,000 segments from
+semi-structured interviews.
+
+The broader research workflow covers evidence extraction, appraisal coding,
+emotion labelling, and segment-level aggregation. Model outputs are compared
+with manual annotations and repeated model runs to evaluate agreement,
+stability, recurring errors, and the effects of changes to prompts and coding
+rules.
+
+Because the original interview material is sensitive, the public repository
+contains only synthetic fixtures. External model calls are replaced with
+deterministic stand-ins so that the schemas, layer boundaries, audits, and tests
+can be executed without exposing research data.
+
+## My contribution
+
+I designed the annotation architecture, coding framework, evidence and scope
+rules, prompt logic, validation strategy, and error-analysis process.
+
+The public implementation translates these research decisions into executable
+schemas, audits, tests, and synthetic examples. Coding assistance was used
+during implementation, while the analytical framework, annotation rules, and
+workflow decisions were developed and reviewed by me.
 
 ## Why staged, and why audited
 
-A single-prompt "text -> emotions" call is difficult to audit. When a label is
-wrong, there is no way to tell whether the system misread the quote, invented a
-second situation, or applied the wrong emotion rule.
-
-This project separates those failure modes:
+A single-prompt `text -> emotions` call does not show where an error entered the
+process. This project separates the main failure points:
 
 - **Scope identity is immutable.** Pass A creates scope IDs. Later stages keep
   the same IDs, count, and order.
 - **Every label points back to evidence.** Labels without resolvable support
   references fail validation.
-- **Layer 2 is deterministic.** It reads appraisal codes and does not quietly
-  reinterpret the raw answer.
-- **Schemas are executable.** The pipeline loads the JSON Schema files and
-  validates the input and every layer boundary before continuing.
+- **Layer 2 is deterministic.** It reads validated appraisal codes rather than
+  silently reinterpreting the raw answer.
+- **Schemas are executable.** The input and every layer boundary are validated
+  against explicit JSON Schema contracts.
+- **Sensitive data stays outside the repository.** All committed examples are
+  synthetic and clearly separated from the original research material.
 
 ## Workflow
 
