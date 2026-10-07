@@ -5,8 +5,8 @@ version:
 
 | File | Research prompt | Task |
 | --- | --- | --- |
-| `pass_a_scope_lock.md` | Layer 1 prompt (v3.1) | Divide one answer into appraisal scopes, each defined by verbatim evidence |
-| `pass_b_appraisal.md` | Layer 2 prompt (frozen) | Code nine appraisal variables for every frozen scope |
+| `pass_a_scope_lock.md` | Layer 1 prompt  | Divide one answer into appraisal scopes, each defined by verbatim evidence |
+| `pass_b_appraisal.md` | Layer 2 prompt   | Code nine appraisal variables for every frozen scope |
 
 The research prompts were frozen before the production run and are identified
 by their hashes. They are not published here; these summaries state their rules
