@@ -1,9 +1,11 @@
-"""Simple, deterministic implementations of Pass A and Pass B.
+"""Deterministic stand-ins for Pass A and Pass B.
 
-The functions are intentionally conservative. They are a runnable baseline for
-testing scope and appraisal contracts, not a replacement for human annotation
-or an LLM-based production annotator. The evidence splitter uses generic
-sentence and clause rules; it is not tuned to one fixture's exact wording.
+In the research version both passes are model calls with frozen prompts. These
+keyword rules only exist so that the output contracts, validators and the
+emotion map can be run on synthetic data without a model or real interview
+text. They are not a classifier and are not expected to generalise. The
+evidence splitter uses generic sentence and clause rules; it is not tuned to
+one fixture's exact wording.
 """
 
 from __future__ import annotations
@@ -25,18 +27,6 @@ FOCUS_RULES: tuple[tuple[str, tuple[str, ...], str, str], ...] = (
     ("specific_object", ("love", "like", "enjoy"), "positive", "a specific object receives positive valuation"),
     ("general_adequacy", ("works well", "good", "comfortable", "satisfied"), "positive", "the overall current condition receives a positive verdict"),
 )
-
-RELEVANCE_BY_FOCUS = {
-    "threat": "high",
-    "loss": "high",
-    "blocked_goal": "high",
-    "dissatisfaction": "medium",
-    "felt_alleviation": "medium",
-    "benefactor": "medium",
-    "future_possibility": "medium",
-    "specific_object": "medium",
-    "general_adequacy": "low",
-}
 
 def split_sentences(text: str) -> list[str]:
     return [
@@ -69,7 +59,7 @@ def _matching_rules(sentence: str) -> list[tuple[str, str, str]]:
 
 
 def _provisional_attributes(focus: str, quote: str) -> dict[str, Any]:
-    """Return draft-only Layer 2 inputs; replace with validated Pass B labels later."""
+    """Return stand-in values for the eight Pass B variables other than focus."""
 
     lowered = quote.lower()
     named_agent = bool(re.search(r"\b(team|worker|office|school|government|woman|neighbour|they|he|she)\b", lowered))
@@ -93,14 +83,14 @@ def _provisional_attributes(focus: str, quote: str) -> dict[str, Any]:
         temporal = ["future"] if future_language else ["present"]
 
     return {
-        "goal_relevance": RELEVANCE_BY_FOCUS[focus],
         "agency": ["other"] if named_agent else ["circumstance"],
-        "certainty": ["uncertain"] if future_language else ["certain"],
         "temporal": temporal,
+        "certainty": ["uncertain"] if future_language else ["certain"],
         "coping": coping,
         "norm_violation_level": 2 if re.search(r"\b(no right|shameless|wrong)\b", lowered) else 0,
         "self_blame_level": 2 if re.search(r"\b(my fault|blame myself|blamed myself)\b", lowered) else 0,
         "resource_depletion": bool(re.search(r"\b(exhausted|no energy|no one can help)\b", lowered)),
+        "goal_relevance": "medium",  # codebook default; high needs an explicit statement
     }
 
 
@@ -118,7 +108,7 @@ def _scope_group(sentence: str, matches: list[tuple[str, str, str]]) -> str | No
 
 
 def pass_a_scope_lock(segment: Segment) -> dict[str, Any]:
-    """Pass A: extract exact evidence and create ordered native scopes."""
+    """Pass A stand-in: return verbatim evidence and its grouping into scopes, nothing else."""
 
     evidence: list[dict[str, str]] = []
     scopes: list[dict[str, Any]] = []
@@ -133,41 +123,25 @@ def pass_a_scope_lock(segment: Segment) -> dict[str, Any]:
             evidence.append({"id": evidence_id, "quote": unit})
             scope = scope_by_group.get(group)
             if scope is None:
-                scope = {
-                    "scope_id": f"s{len(scopes) + 1}",
-                    "object": unit,
-                    "stance_refs": [],
-                    "context_items": [],
-                    "relations_to_prior_scopes": [
-                        {"scope_id": prior["scope_id"], "relation": "independent"}
-                        for prior in scopes
-                    ],
-                }
+                scope = {"scope_id": f"s{len(scopes) + 1}", "evidence_refs": []}
                 scopes.append(scope)
                 scope_by_group[group] = scope
-            scope["stance_refs"].append(evidence_id)
+            scope["evidence_refs"].append(evidence_id)
     return {"evidence": evidence, "scopes": scopes}
 
 
 def pass_b_appraisal(scope_packet: dict[str, Any]) -> dict[str, Any]:
-    """Pass B: annotate appraisal fields without changing locked scopes."""
+    """Pass B stand-in: return the nine appraisal variables per frozen scope.
+
+    Like the research version, it returns no reasons, confidence, valence,
+    emotion labels or intensity, and it cannot change the scopes.
+    """
 
     by_id = {item["id"]: item["quote"] for item in scope_packet["evidence"]}
     results: list[dict[str, Any]] = []
     for scope in scope_packet["scopes"]:
-        quote = " ".join(by_id[ref] for ref in scope["stance_refs"])
-        matches = _matching_rules(quote)
-        focus, polarity, criterion = matches[0]
-        results.append(
-            {
-                "scope_id": scope["scope_id"],
-                "polarity": polarity,
-                "focus": focus,
-                "criterion": criterion,
-                "support_refs": list(scope["stance_refs"]),
-                "confidence": "medium",
-                **_provisional_attributes(focus, quote),
-            }
-        )
+        quote = " ".join(by_id[ref] for ref in scope["evidence_refs"])
+        focus = _matching_rules(quote)[0][0]
+        results.append({"scope_id": scope["scope_id"], "focus": focus, **_provisional_attributes(focus, quote)})
     return {"scopes": results}
 

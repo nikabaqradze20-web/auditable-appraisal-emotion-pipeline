@@ -1,55 +1,60 @@
-# Architecture and roadmap
-
-## Implemented now
+# Architecture
 
 ```text
-question + answer
+interviewer question + respondent answer
         |
         v
-Pass A: exact evidence + native scope lock
-        | audit: quote and assignment integrity
+Pass A: appraisal scopes + verbatim evidence          (model in research; stand-in here)
+        | validator: verbatim 1-20 word quotes, every item in exactly one scope, order
         v
-Pass B: appraisal polarity, focus, criterion, support
-        | audit: immutable scope identity and allowed labels
-        v
-validated appraisal packet
+frozen scopes
         |
         v
-Layer 2 draft: deterministic emotion scoring per scope
-        | audit: identity, errors, and intensity bounds
+Pass B: nine appraisal variables per scope            (model in research; stand-in here)
+        | validator: one record per scope, same IDs and order, allowed values only
         v
-provisional per-scope and merged emotion profile
+Layer 3: fixed emotion map in Python                  (identical in research and here)
+        | check: primary emotion follows focus, anger only on negative scopes
+        v
+emotions present in the answer
 ```
 
-Pass B cannot create, merge, split, reorder, or rename Pass A scopes.
+At each boundary, `src/emotion_pipeline/schema_validation.py` validates the
+object against the matching file in `schemas/` before the next step. The
+schemas are executable contracts. Pass B's schema rejects any field beyond the
+nine variables, so it cannot return an emotion label, a reason or a confidence
+score.
 
-At each boundary, `src/emotion_pipeline/schema_validation.py` loads the matching
-file from `schemas/` and validates the object before the next audit or layer.
-The schemas are therefore executable contracts, not documentation-only files.
+## What runs where
 
-Layer 2 is a working draft. Its intensity modifiers, derived gates, and merged
-segment profile need an approved emotion manual and a human-coded gold set
-before they should be treated as reliable.
+| Step | Research version | This repository |
+| --- | --- | --- |
+| Pass A | Frozen Layer 1 prompt (v3.1), language model | Keyword and clause rules (`layers.py`) |
+| Pass B | Frozen Layer 2 prompt, language model | Keyword rules with codebook defaults (`layers.py`) |
+| Layer 3 | Python emotion map | Same map (`emotion_scoring.py`) |
+| Validators | Blocking checks on every output | Same structural checks (`audits.py`, `schemas/`) |
+| Data | Real interview answers, access-restricted | Six synthetic answers (`data/`) |
+
+The stand-ins exist so that the contracts, validators and emotion map can be
+run and tested without a model or real data. They are not a classifier.
 
 ## Design principles
 
-- Evidence before labels.
-- Scope identity is immutable after Pass A.
-- Missing evidence is reported, not silently filled.
-- The moderator question does not create respondent appraisal evidence.
-- LLM output is a noisy measurement, not ground truth.
-- Sensitive source material stays outside the public repository.
+- Model output is a measurement with error, validated against human coding.
+- Each model pass has one narrow task: Pass A never assigns variables, Pass B
+  never changes scopes.
+- The model never names an emotion; a fixed, inspectable map derives emotions.
+- Every emotion traces to appraisal codes and, through the scope, to verbatim
+  evidence that a validator can check by string matching.
+- Results record whether an emotion is present in an answer, not how many
+  scopes carry it.
+- Sensitive source material stays outside the repository.
 
-## Model-backed extension
+## Attaching a model
 
-A future adapter can call an LLM for each pass, but it should keep the prompts
-versioned, require structured JSON, validate every response, and record model
-metadata separately from annotation text. The current deterministic rules are
-only a transparent contract test.
-
-## Validation needed before scaling
-
-Add a human-coded gold set containing single-scope, mixed-polarity, temporal,
-coping, agency, blocked-goal, dissatisfaction, and no-appraisal cases. Report
-scope-count agreement, per-label precision/recall, and false-label rates.
-
+Replace `pass_a_scope_lock` and `pass_b_appraisal` in `layers.py` with model
+calls that return the same JSON contracts. Keep Layer 3 deterministic and keep
+all validators and tests. If a model-backed pass cannot pass the validators,
+fix the prompt or the contract rather than weakening the validator. Freeze and
+hash the prompts before any production run, and validate on a held-out sample
+the prompts have not seen (see `docs/VALIDATION.md`).

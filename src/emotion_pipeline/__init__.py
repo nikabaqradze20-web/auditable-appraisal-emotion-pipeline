@@ -1,4 +1,4 @@
-"""Offline, Layer 2-only reference implementation of the auditable workflow."""
+"""Offline reference implementation of the auditable appraisal-to-emotion workflow."""
 
 from .pipeline import run_pipeline
 

@@ -1,8 +1,8 @@
 # Traceability walkthrough
 
-This walkthrough uses `SEG_SYN_001`, the canonical synthetic example. It is
-chosen to show scope grouping, exclusion of third-party reports, derived anger,
-benefactor gratitude, and a merged emotion profile.
+This walkthrough follows `SEG_SYN_001`, the canonical synthetic example, from
+the answer to the emotions it carries. The answer is invented; it contains no
+real interview content.
 
 ## Input
 
@@ -15,83 +15,58 @@ Answer:   The office cancelled our flat two weeks after they promised it.
           forms, otherwise I would not manage.
 ```
 
-## Pass A: evidence and scope lock
+## Pass A: scopes and evidence
 
-Pass A extracts these evidence spans:
-
-| Ref | Span | Scope |
+| Ref | Evidence (verbatim) | Scope |
 | --- | --- | --- |
-| `e1` | `The office cancelled our flat two weeks after they promised it` | `s1` |
-| `e2` | `They had no right to do that` | `s1` |
-| `e3` | `we are still in the shelter` | `s1` |
-| `e4` | `A woman from the language school sits with me every Thursday and fills in the forms` | `s2` |
-| `e5` | `otherwise I would not manage` | `s2` |
+| `e1` | The office cancelled our flat two weeks after they promised it | `s1` |
+| `e2` | They had no right to do that | `s1` |
+| `e3` | we are still in the shelter | `s1` |
+| `e4` | A woman from the language school sits with me every Thursday and fills in the forms | `s2` |
+| `e5` | otherwise I would not manage | `s2` |
 
-The sentence `My neighbour says the same thing happened to her` is not
-extracted. It reports another person's experience and does not express the
-respondent's own stance.
+- *My neighbour says the same thing happened to her* creates no scope: it
+  reports another person's experience, not the respondent's own evaluation.
+- The cancellation, the stated wrong and the ongoing shelter stay in one scope:
+  they are cause, judgement and current state of one appraisal.
+- The help with the forms is a second scope because the respondent values it
+  in its own right; it is credited to a named helper.
 
-Pass A groups `e1,e2,e3` into one housing-obstacle scope and `e4,e5` into one
-benefactor scope. It does not split on punctuation or create a scope for the
-third-party report.
+Pass A returns only the evidence and this grouping. The scopes are then frozen.
 
-## Pass B: appraisal coding
+## Pass B: nine variables per scope
 
-| Scope | Focus | Agency | Temporal | Coping | Ordinals |
-| --- | --- | --- | --- | --- | --- |
-| `s1` | `blocked_goal` | `other` | `past`, `present` | `low` | norm violation `2` |
-| `s2` | `benefactor` | `other` | `present` | `high` | `0` |
+| Scope | Focus | Agency | Time | Certainty | Coping | Norm violation | Self-blame | Depletion | Goal relevance |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `s1` | `blocked_goal` | `other` | past, present | certain | `low` | 2 | 0 | false | medium |
+| `s2` | `benefactor` | `other` | present | certain | `high` | 0 | 0 | false | medium |
 
-## Layer 2: deterministic emotion mapping
+## Layer 3: emotion map
 
-Layer 2 reads only the Pass B codes:
+Layer 3 reads only the Pass B records:
 
 ```text
-s1 -> blocked_goal -> frustration (intensity 3)
-s1 -> norm violation >= 2 + other agency -> anger_indignation (3)
-s2 -> benefactor -> gratitude (2)
+s1: blocked_goal -> frustration (negative, obstruction band)
+s1: negative scope + norm violation 2 + agency "other" -> anger overlay
+s2: benefactor -> gratitude (positive, active band)
 ```
 
-The merged profile is:
+The answer carries the emotions present in at least one scope:
 
 ```json
-{
-  "frustration": 3,
-  "anger_indignation": 3,
-  "gratitude": 2
-}
+["frustration", "anger", "gratitude"]
 ```
 
-`anger_indignation` is additive and gate-derived. It is not a direct mapping
-from the `blocked_goal` focus.
+No intensity is derived, and an answer with two frustration scopes would still
+count frustration once.
 
-## Merged Layer 2 profile
+## Why this example
 
-Layer 2 scores each appraisal scope independently, then merges active labels by
-union and keeps the maximum intensity per label:
+1. It contains no emotion words, yet every emotion traces to quoted evidence.
+2. Anger is added on top of frustration, not instead of it.
+3. A third-party report stays uncoded.
+4. Material that develops one appraisal stays in one scope.
 
-```json
-{
-  "segment_emotions": {
-    "frustration": 3,
-    "anger_indignation": 3,
-    "gratitude": 2
-  }
-}
-```
-
-An empty scope list produces `{}`. No separate segment-review layer is used in
-this version; segment-level aggregation ends with the deterministic Layer 2
-profile.
-
-## Why this example matters
-
-1. It contains no explicit emotion words.
-2. It demonstrates a derived emotion gate.
-3. It shows that a relevant third-party sentence can remain uncoded.
-4. It shows two genuine appraisal situations rather than one scope per sentence.
-
-The committed machine-readable result is
+The machine-readable result is
 [`examples/SEG_SYN_001_trace.json`](../examples/SEG_SYN_001_trace.json). A test
 re-runs the pipeline and compares the result with this file.
-

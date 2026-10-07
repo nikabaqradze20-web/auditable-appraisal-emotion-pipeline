@@ -19,17 +19,18 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["scope_id", "object", "stance_refs", "context_items", "relations_to_prior_scopes"],
+        "required": ["scope_id", "evidence_refs"],
         "additionalProperties": false,
         "properties": {
           "scope_id": {"type": "string", "pattern": "^s[1-9][0-9]*$"},
-          "object": {"type": "string", "minLength": 1},
-          "stance_refs": {"type": "array", "items": {"type": "string"}},
-          "context_items": {"type": "array"},
-          "relations_to_prior_scopes": {"type": "array"}
+          "evidence_refs": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^e[1-9][0-9]*$"},
+            "minItems": 1,
+            "uniqueItems": true
+          }
         }
       }
     }
   }
 }
-

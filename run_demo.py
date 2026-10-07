@@ -1,4 +1,4 @@
-"""Run the public synthetic examples through Pass A and Pass B."""
+"""Run the synthetic examples through Pass A, Pass B and Layer 3."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def main() -> int:
     records = json.loads(args.input.read_text(encoding="utf-8"))
     results = [run_pipeline(record) for record in records]
     args.output.write_text(json.dumps(results, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Processed {len(results)} synthetic segments; all audits passed.")
+    print(f"Processed {len(results)} synthetic answers; all validators passed.")
     print(f"Wrote {args.output}")
     return 0
 

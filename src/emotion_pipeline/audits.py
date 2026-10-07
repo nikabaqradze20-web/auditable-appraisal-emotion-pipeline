@@ -1,21 +1,20 @@
-"""Pass A and Pass B audits for the public demo."""
+"""Blocking validators for each pipeline boundary.
+
+Pass A and Pass B follow the blocking checks of the research run: structure,
+verbatim evidence of 1 to 20 words, every evidence item assigned to exactly one
+scope, scopes ordered by their first evidence item, and frozen scope identity in
+Pass B. Allowed values per variable are enforced by the JSON Schemas in
+``schemas/``. Layer 3 is checked against the fixed emotion map.
+"""
 
 from __future__ import annotations
 
 from typing import Any
 
 from .contracts import ContractError, Segment
-from .layers import FOCUS_RULES
+from .emotion_scoring import EMOTION_MAP
 
-
-NEGATIVE_FOCI = {"threat", "loss", "blocked_goal", "dissatisfaction"}
-POSITIVE_FOCI = {
-    "felt_alleviation",
-    "benefactor",
-    "future_possibility",
-    "specific_object",
-    "general_adequacy",
-}
+MAX_QUOTE_WORDS = 20
 
 
 def _audit(name: str, checks: list[tuple[str, bool]]) -> dict[str, Any]:
@@ -27,15 +26,25 @@ def audit_pass_a(segment: Segment, packet: dict[str, Any]) -> dict[str, Any]:
     evidence = packet.get("evidence", [])
     scopes = packet.get("scopes", [])
     evidence_ids = [item.get("id") for item in evidence]
-    quoted_text = segment.respondent_answer
-    refs = [ref for scope in scopes for ref in scope.get("stance_refs", [])]
+    position = {evidence_id: index for index, evidence_id in enumerate(evidence_ids)}
+    refs = [ref for scope in scopes for ref in scope.get("evidence_refs", [])]
+    first_refs = [position.get(scope["evidence_refs"][0], -1) for scope in scopes if scope.get("evidence_refs")]
+    answer = segment.respondent_answer
     return _audit(
         "pass_a_scope_lock",
         [
             ("root keys are present", set(packet) == {"evidence", "scopes"}),
-            ("evidence IDs are unique", len(evidence_ids) == len(set(evidence_ids))),
-            ("every quote is exact source text", all(item.get("quote", "") in quoted_text for item in evidence)),
-            ("every evidence item is assigned", set(evidence_ids) == set(refs)),
+            ("evidence IDs are numbered in sequence", evidence_ids == [f"e{i}" for i in range(1, len(evidence_ids) + 1)]),
+            ("every quote is verbatim source text", all(item.get("quote", "") in answer for item in evidence)),
+            ("every quote has 1 to 20 words", all(1 <= len(item.get("quote", "").split()) <= MAX_QUOTE_WORDS for item in evidence)),
+            ("scopes refer only to existing evidence", all(ref in position for ref in refs)),
+            ("every evidence item belongs to exactly one scope", sorted(refs, key=str) == sorted(evidence_ids, key=str)),
+            ("evidence is in text order within each scope", all(
+                [position.get(ref, -1) for ref in scope.get("evidence_refs", [])]
+                == sorted(position.get(ref, -1) for ref in scope.get("evidence_refs", []))
+                for scope in scopes
+            )),
+            ("scopes are ordered by their first evidence item", first_refs == sorted(first_refs)),
         ],
     )
 
@@ -43,44 +52,31 @@ def audit_pass_a(segment: Segment, packet: dict[str, Any]) -> dict[str, Any]:
 def audit_pass_b(scope_packet: dict[str, Any], appraisal_packet: dict[str, Any]) -> dict[str, Any]:
     scope_ids = [scope.get("scope_id") for scope in scope_packet.get("scopes", [])]
     appraisal_ids = [scope.get("scope_id") for scope in appraisal_packet.get("scopes", [])]
-    allowed_focus = {focus for focus, *_ in FOCUS_RULES}
-
-    def polarity_matches_focus(scope: dict[str, Any]) -> bool:
-        focus = scope.get("focus")
-        polarity = scope.get("polarity")
-        if focus in NEGATIVE_FOCI:
-            return polarity == "negative"
-        if focus in POSITIVE_FOCI:
-            return polarity == "positive"
-        return False
-
     return _audit(
         "pass_b_appraisal",
         [
-            ("scope identity is immutable", scope_ids == appraisal_ids),
-            ("focus labels are allowed", all(scope.get("focus") in allowed_focus for scope in appraisal_packet.get("scopes", []))),
-            ("polarity matches focus", all(polarity_matches_focus(scope) for scope in appraisal_packet.get("scopes", []))),
-            ("support references are non-empty", all(scope.get("support_refs") for scope in appraisal_packet.get("scopes", []))),
+            ("one record per frozen scope, same IDs, same order", scope_ids == appraisal_ids),
         ],
     )
 
 
-def audit_layer2(appraisal_packet: dict[str, Any], emotion_packet: dict[str, Any]) -> dict[str, Any]:
-    """Audit Layer 2 identity, error status, and intensity bounds."""
+def audit_layer3(appraisal_packet: dict[str, Any], emotion_packet: dict[str, Any]) -> dict[str, Any]:
+    """Check Layer 3 against the fixed map: identity, primary emotion, anger rule."""
 
-    appraisal_ids = [scope.get("scope_id") for scope in appraisal_packet.get("scopes", [])]
-    emotion_ids = [scope.get("scope_id") for scope in emotion_packet.get("per_scope", [])]
-    intensities = [
-        intensity
-        for scope in emotion_packet.get("per_scope", [])
-        for intensity in scope.get("emotions", {}).values()
-    ]
+    records = appraisal_packet.get("scopes", [])
+    derived = emotion_packet.get("per_scope", [])
+    pairs = list(zip(records, derived))
     return _audit(
-        "layer2_emotions_draft",
+        "layer3_emotions",
         [
-            ("scope identity is immutable", appraisal_ids == emotion_ids),
-            ("all intensity values are 1..3", all(value in {1, 2, 3} for value in intensities)),
-            ("no scoring errors are present", not emotion_packet.get("errors")),
+            ("scope identity is unchanged", [r.get("scope_id") for r in records] == [d.get("scope_id") for d in derived]),
+            ("primary emotion follows the focus map", all(
+                d.get("primary_emotion") == EMOTION_MAP.get(r.get("focus"), (None,))[0] for r, d in pairs
+            )),
+            ("anger only on negative scopes", all(
+                "anger" not in d.get("overlays", []) or d.get("valence") == "negative" for d in derived
+            )),
+            ("no derivation errors are present", not emotion_packet.get("errors")),
         ],
     )
 
@@ -89,4 +85,3 @@ def assert_all_audits_pass(audits: list[dict[str, Any]]) -> None:
     failed = [audit for audit in audits if audit["status"] != "pass"]
     if failed:
         raise ContractError(f"failed audits: {failed}")
-

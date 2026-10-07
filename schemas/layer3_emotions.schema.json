@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "required": ["per_scope", "answer_emotions", "errors"],
+  "additionalProperties": false,
+  "properties": {
+    "per_scope": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scope_id", "primary_emotion", "valence", "band", "overlays", "self_blame_overlay", "trace", "errors"],
+        "additionalProperties": false,
+        "properties": {
+          "scope_id": {"type": ["string", "null"]},
+          "primary_emotion": {
+            "enum": [
+              "fear_anxiety", "sadness", "frustration", "discontent",
+              "relief", "gratitude", "hope", "liking_enjoyment", "contentment", null
+            ]
+          },
+          "valence": {"enum": ["negative", "positive", null]},
+          "band": {
+            "enum": [
+              "negative_threat", "negative_loss", "negative_obstruction",
+              "positive_active", "positive_settled", null
+            ]
+          },
+          "overlays": {"type": "array", "items": {"enum": ["anger"]}, "uniqueItems": true},
+          "self_blame_overlay": {"type": "boolean"},
+          "trace": {"type": "array", "items": {"type": "string"}},
+          "errors": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "answer_emotions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "fear_anxiety", "sadness", "frustration", "discontent", "anger",
+          "relief", "gratitude", "hope", "liking_enjoyment", "contentment"
+        ]
+      }
+    },
+    "errors": {"type": "array", "items": {"type": "string"}}
+  }
+}

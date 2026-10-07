@@ -7,27 +7,41 @@
   "passes": {
     "pass_a_scope_lock": {
       "evidence": [
-        {"id": "e1", "quote": "The office cancelled our flat two weeks after they promised it"},
-        {"id": "e2", "quote": "They had no right to do that"},
-        {"id": "e3", "quote": "we are still in the shelter"},
-        {"id": "e4", "quote": "A woman from the language school sits with me every Thursday and fills in the forms"},
-        {"id": "e5", "quote": "otherwise I would not manage"}
+        {
+          "id": "e1",
+          "quote": "The office cancelled our flat two weeks after they promised it"
+        },
+        {
+          "id": "e2",
+          "quote": "They had no right to do that"
+        },
+        {
+          "id": "e3",
+          "quote": "we are still in the shelter"
+        },
+        {
+          "id": "e4",
+          "quote": "A woman from the language school sits with me every Thursday and fills in the forms"
+        },
+        {
+          "id": "e5",
+          "quote": "otherwise I would not manage"
+        }
       ],
       "scopes": [
         {
           "scope_id": "s1",
-          "object": "The office cancelled our flat two weeks after they promised it",
-          "stance_refs": ["e1", "e2", "e3"],
-          "context_items": [],
-          "relations_to_prior_scopes": []
+          "evidence_refs": [
+            "e1",
+            "e2",
+            "e3"
+          ]
         },
         {
           "scope_id": "s2",
-          "object": "A woman from the language school sits with me every Thursday and fills in the forms",
-          "stance_refs": ["e4", "e5"],
-          "context_items": [],
-          "relations_to_prior_scopes": [
-            {"scope_id": "s1", "relation": "independent"}
+          "evidence_refs": [
+            "e4",
+            "e5"
           ]
         }
       ]
@@ -36,65 +50,96 @@
       "scopes": [
         {
           "scope_id": "s1",
-          "polarity": "negative",
           "focus": "blocked_goal",
-          "criterion": "a desired outcome is obstructed",
-          "support_refs": ["e1", "e2", "e3"],
-          "confidence": "medium",
-          "goal_relevance": "high",
-          "agency": ["other"],
-          "certainty": ["certain"],
-          "temporal": ["past", "present"],
+          "agency": [
+            "other"
+          ],
+          "temporal": [
+            "past",
+            "present"
+          ],
+          "certainty": [
+            "certain"
+          ],
           "coping": "low",
           "norm_violation_level": 2,
           "self_blame_level": 0,
-          "resource_depletion": false
+          "resource_depletion": false,
+          "goal_relevance": "medium"
         },
         {
           "scope_id": "s2",
-          "polarity": "positive",
           "focus": "benefactor",
-          "criterion": "another party provided valued help",
-          "support_refs": ["e4", "e5"],
-          "confidence": "medium",
-          "goal_relevance": "medium",
-          "agency": ["other"],
-          "certainty": ["certain"],
-          "temporal": ["present"],
+          "agency": [
+            "other"
+          ],
+          "temporal": [
+            "present"
+          ],
+          "certainty": [
+            "certain"
+          ],
           "coping": "high",
           "norm_violation_level": 0,
           "self_blame_level": 0,
-          "resource_depletion": false
+          "resource_depletion": false,
+          "goal_relevance": "medium"
         }
       ]
     }
   },
-  "layer2_emotions_draft": {
-    "segment_emotions": {
-      "frustration": 3,
-      "anger_indignation": 3,
-      "gratitude": 2
-    },
+  "layer3_emotions": {
     "per_scope": [
       {
         "scope_id": "s1",
-        "emotions": {"frustration": 3, "anger_indignation": 3},
-        "trace": ["focus=blocked_goal -> frustration", "gate_anger fired"],
+        "primary_emotion": "frustration",
+        "valence": "negative",
+        "band": "negative_obstruction",
+        "overlays": [
+          "anger"
+        ],
+        "self_blame_overlay": false,
+        "trace": [
+          "focus=blocked_goal -> frustration (negative, negative_obstruction)",
+          "anger overlay: negative scope, norm violation >= 2, other/out_group/in_group agency"
+        ],
         "errors": []
       },
       {
         "scope_id": "s2",
-        "emotions": {"gratitude": 2},
-        "trace": ["focus=benefactor -> gratitude"],
+        "primary_emotion": "gratitude",
+        "valence": "positive",
+        "band": "positive_active",
+        "overlays": [],
+        "self_blame_overlay": false,
+        "trace": [
+          "focus=benefactor -> gratitude (positive, positive_active)"
+        ],
         "errors": []
       }
+    ],
+    "answer_emotions": [
+      "frustration",
+      "anger",
+      "gratitude"
     ],
     "errors": []
   },
   "audits": [
-    {"layer": "pass_a_scope_lock", "status": "pass", "issues": []},
-    {"layer": "pass_b_appraisal", "status": "pass", "issues": []},
-    {"layer": "layer2_emotions_draft", "status": "pass", "issues": []}
+    {
+      "layer": "pass_a_scope_lock",
+      "status": "pass",
+      "issues": []
+    },
+    {
+      "layer": "pass_b_appraisal",
+      "status": "pass",
+      "issues": []
+    },
+    {
+      "layer": "layer3_emotions",
+      "status": "pass",
+      "issues": []
+    }
   ]
 }
-

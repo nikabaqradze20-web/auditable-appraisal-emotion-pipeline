@@ -8,14 +8,13 @@
       "items": {
         "type": "object",
         "required": [
-          "scope_id", "polarity", "focus", "criterion", "support_refs", "confidence",
-          "goal_relevance", "agency", "certainty", "temporal", "coping",
-          "norm_violation_level", "self_blame_level", "resource_depletion"
+          "scope_id", "focus", "agency", "temporal", "certainty", "coping",
+          "norm_violation_level", "self_blame_level", "resource_depletion",
+          "goal_relevance"
         ],
         "additionalProperties": false,
         "properties": {
-          "scope_id": {"type": "string"},
-          "polarity": {"enum": ["negative", "positive"]},
+          "scope_id": {"type": "string", "pattern": "^s[1-9][0-9]*$"},
           "focus": {
             "enum": [
               "threat", "loss", "blocked_goal", "dissatisfaction",
@@ -23,33 +22,34 @@
               "specific_object", "general_adequacy"
             ]
           },
-          "criterion": {"type": "string", "minLength": 1},
-          "support_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
-          "confidence": {"enum": ["low", "medium", "high"]},
-          "goal_relevance": {"enum": ["low", "medium", "high"]},
           "agency": {
             "type": "array",
             "items": {"enum": ["self", "other", "in_group", "out_group", "circumstance"]},
             "minItems": 1,
-            "maxItems": 2
-          },
-          "certainty": {
-            "type": "array",
-            "items": {"enum": ["certain", "uncertain", "hypothetical"]},
-            "minItems": 1
+            "maxItems": 2,
+            "uniqueItems": true
           },
           "temporal": {
             "type": "array",
             "items": {"enum": ["past", "present", "future"]},
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "certainty": {
+            "type": "array",
+            "items": {"enum": ["certain", "uncertain", "hypothetical"]},
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
           },
           "coping": {"enum": ["zero", "low", "medium", "high"]},
           "norm_violation_level": {"type": "integer", "minimum": 0, "maximum": 3},
-          "self_blame_level": {"type": "integer", "minimum": 0, "maximum": 3},
-          "resource_depletion": {"type": "boolean"}
+          "self_blame_level": {"type": "integer", "minimum": 0, "maximum": 2},
+          "resource_depletion": {"type": "boolean"},
+          "goal_relevance": {"enum": ["low", "medium", "high"]}
         }
       }
     }
   }
 }
-

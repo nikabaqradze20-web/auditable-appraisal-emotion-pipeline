@@ -1,9 +1,17 @@
-"""Draft deterministic Layer 2 emotion scoring.
+"""Layer 3: deterministic emotion derivation.
 
-This module consumes validated Pass B appraisal scopes. It never reads the
-original evidence text and never changes the appraisal interpretation. The
-intensity modifiers and derived gates are provisional until checked against a
-human-coded gold set.
+This module consumes validated Pass B records. It never reads the evidence text
+and never changes an appraisal code. It follows the emotion map of the research
+version:
+
+- each focus category maps to exactly one primary emotion;
+- anger is an overlay added to a negative scope when the respondent frames
+  something as clearly wrong (norm violation >= 2) and a person, institution or
+  group is responsible (agency includes other, out_group or in_group);
+- a self-blame overlay is defined (self-blame level 2 plus self or in_group
+  agency) but not analysed, because self-blame was not coded reliably;
+- no intensity is derived;
+- an answer carries an emotion when at least one of its scopes carries it.
 """
 
 from __future__ import annotations
@@ -11,106 +19,108 @@ from __future__ import annotations
 from typing import Any
 
 
-CORE_MAP = {
-    "threat": "anxiety_fear",
-    "loss": "sadness_loss",
-    "blocked_goal": "frustration",
-    "dissatisfaction": "mild_negative",
-    "felt_alleviation": "relief_safety",
-    "benefactor": "gratitude",
-    "future_possibility": "hope",
-    "specific_object": "joy",
-    "general_adequacy": "contentment",
+# focus -> (primary emotion, valence, band)
+EMOTION_MAP: dict[str, tuple[str, str, str]] = {
+    "threat": ("fear_anxiety", "negative", "negative_threat"),
+    "loss": ("sadness", "negative", "negative_loss"),
+    "blocked_goal": ("frustration", "negative", "negative_obstruction"),
+    "dissatisfaction": ("discontent", "negative", "negative_obstruction"),
+    "felt_alleviation": ("relief", "positive", "positive_settled"),
+    "benefactor": ("gratitude", "positive", "positive_active"),
+    "future_possibility": ("hope", "positive", "positive_active"),
+    "specific_object": ("liking_enjoyment", "positive", "positive_active"),
+    "general_adequacy": ("contentment", "positive", "positive_settled"),
 }
 
-FOCUS_ALIASES = {"mild_dissatisfaction": "dissatisfaction"}
-NEGATIVE_EMOTIONS = {
-    "anxiety_fear",
-    "sadness_loss",
+# Reporting order of the ten analysed emotions (nine primary emotions + anger).
+EMOTION_ORDER = (
+    "fear_anxiety",
+    "sadness",
     "frustration",
-    "mild_negative",
-    "anger_indignation",
-    "shame_guilt",
-}
-RELEVANCE_TO_INTENSITY = {"low": 1, "medium": 2, "high": 3}
-INTENSITY_CAP = {"mild_negative": 1}
-BLAME_AGENCY = {"other", "out_group", "in_group"}
-SELF_AGENCY = {"self", "in_group"}
+    "discontent",
+    "anger",
+    "relief",
+    "gratitude",
+    "hope",
+    "liking_enjoyment",
+    "contentment",
+)
+
+ANGER_AGENCY = {"other", "out_group", "in_group"}
+SELF_BLAME_AGENCY = {"self", "in_group"}
 
 
-def gate_anger(scope: dict[str, Any]) -> bool:
+def anger_overlay(scope: dict[str, Any], valence: str | None) -> bool:
     return (
-        scope.get("norm_violation_level", 0) >= 2
-        and bool(set(scope.get("agency", [])) & BLAME_AGENCY)
+        valence == "negative"
+        and scope.get("norm_violation_level", 0) >= 2
+        and bool(set(scope.get("agency", [])) & ANGER_AGENCY)
     )
 
 
-def gate_shame(scope: dict[str, Any]) -> bool:
+def self_blame_overlay(scope: dict[str, Any], valence: str | None) -> bool:
+    """Defined as in the research version, but not analysed."""
+
     return (
-        scope.get("self_blame_level", 0) >= 2
-        and bool(set(scope.get("agency", [])) & SELF_AGENCY)
+        valence == "negative"
+        and scope.get("self_blame_level", 0) >= 2
+        and bool(set(scope.get("agency", [])) & SELF_BLAME_AGENCY)
     )
 
 
-def scope_intensity(scope: dict[str, Any], emotion: str, errors: list[str]) -> int:
-    relevance = scope.get("goal_relevance")
-    if relevance not in RELEVANCE_TO_INTENSITY:
-        errors.append(f"invalid_goal_relevance: {relevance!r}")
-    value = RELEVANCE_TO_INTENSITY.get(relevance, 2)
+def derive_scope(scope: dict[str, Any]) -> dict[str, Any]:
+    """Derive the primary emotion and overlays of one scope, with a trace."""
 
-    if scope.get("coping") == "zero" and emotion in NEGATIVE_EMOTIONS:
-        value += 1
-    if scope.get("resource_depletion") is True and emotion in NEGATIVE_EMOTIONS:
-        value += 1
-
-    value = max(1, min(value, 3))
-    return min(value, INTENSITY_CAP.get(emotion, 3))
-
-
-def score_scope(scope: dict[str, Any]) -> dict[str, Any]:
-    """Score one Pass B scope and retain a human-readable decision trace."""
-
-    emotions: dict[str, int] = {}
-    trace: list[str] = []
     errors: list[str] = []
+    trace: list[str] = []
     scope_id = scope.get("scope_id")
     if not isinstance(scope_id, str) or not scope_id:
         errors.append("missing_scope_id")
 
-    focus = FOCUS_ALIASES.get(scope.get("focus"), scope.get("focus"))
-    core = CORE_MAP.get(focus)
-    if core is None:
-        errors.append(f"unknown_focus: {scope.get('focus')!r}")
+    focus = scope.get("focus")
+    mapped = EMOTION_MAP.get(focus)
+    if mapped is None:
+        errors.append(f"unknown_focus: {focus!r}")
+        primary, valence, band = None, None, None
     else:
-        emotions[core] = scope_intensity(scope, core, errors)
-        trace.append(f"focus={focus} -> {core}")
+        primary, valence, band = mapped
+        trace.append(f"focus={focus} -> {primary} ({valence}, {band})")
 
-    if gate_anger(scope):
-        emotions["anger_indignation"] = scope_intensity(scope, "anger_indignation", errors)
-        trace.append("gate_anger fired")
-    if gate_shame(scope):
-        emotions["shame_guilt"] = scope_intensity(scope, "shame_guilt", errors)
-        trace.append("gate_shame fired")
+    overlays: list[str] = []
+    if anger_overlay(scope, valence):
+        overlays.append("anger")
+        trace.append("anger overlay: negative scope, norm violation >= 2, other/out_group/in_group agency")
 
-    return {"scope_id": scope_id, "emotions": emotions, "trace": trace, "errors": errors}
+    self_blame = self_blame_overlay(scope, valence)
+    if self_blame:
+        trace.append("self-blame overlay fired (defined, not analysed)")
+
+    return {
+        "scope_id": scope_id,
+        "primary_emotion": primary,
+        "valence": valence,
+        "band": band,
+        "overlays": overlays,
+        "self_blame_overlay": self_blame,
+        "trace": trace,
+        "errors": errors,
+    }
 
 
-def score_segment(pass_b: dict[str, Any]) -> dict[str, Any]:
-    """Score Pass B scopes independently, then merge labels by max intensity."""
+def derive_answer(pass_b: dict[str, Any]) -> dict[str, Any]:
+    """Derive emotions per scope, then record which emotions the answer carries."""
 
-    scopes = pass_b.get("scopes", [])
-    if not scopes:
-        return {"segment_emotions": {}, "per_scope": [], "errors": []}
-
-    per_scope: list[dict[str, Any]] = []
-    merged: dict[str, int] = {}
+    per_scope = [derive_scope(scope) for scope in pass_b.get("scopes", [])]
+    present: set[str] = set()
     errors: list[str] = []
-    for scope in scopes:
-        result = score_scope(scope)
-        per_scope.append(result)
+    for result in per_scope:
         errors.extend(result["errors"])
-        for emotion, intensity in result["emotions"].items():
-            merged[emotion] = max(merged.get(emotion, 0), intensity)
+        if result["primary_emotion"]:
+            present.add(result["primary_emotion"])
+        present.update(result["overlays"])
 
-    return {"segment_emotions": merged, "per_scope": per_scope, "errors": errors}
-
+    return {
+        "per_scope": per_scope,
+        "answer_emotions": [emotion for emotion in EMOTION_ORDER if emotion in present],
+        "errors": errors,
+    }

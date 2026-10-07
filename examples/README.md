@@ -1,6 +1,5 @@
 # Examples
 
-This directory contains committed synthetic traces for the Layer 2-only public
-pipeline. The canonical trace follows evidence through Pass A and Pass B into
-the deterministic `segment_emotions` profile.
-
+`SEG_SYN_001_trace.json` is the full output for the canonical synthetic answer:
+Pass A evidence and scopes, Pass B records, Layer 3 emotions and the validator
+results. `docs/TRACEABILITY.md` walks through it step by step.
