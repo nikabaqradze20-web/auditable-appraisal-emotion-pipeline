@@ -1,4 +1,4 @@
-"""Orchestration: Pass A -> Pass B -> Layer 3, with a validator at each boundary."""
+"""Orchestration: Pass A -> Pass B -> emotion mapping, with a validator at each boundary."""
 
 from __future__ import annotations
 
@@ -6,12 +6,12 @@ from typing import Any, Mapping
 
 from .audits import (
     assert_all_audits_pass,
-    audit_layer3,
+    audit_emotion_mapping,
     audit_pass_a,
     audit_pass_b,
 )
 from .contracts import Segment
-from .emotion_scoring import derive_answer
+from .emotion_mapping import derive_answer
 from .layers import (
     pass_a_scope_lock,
     pass_b_appraisal,
@@ -34,8 +34,8 @@ def run_pipeline(value: Mapping[str, Any]) -> dict[str, Any]:
     assert_all_audits_pass([audit_b])
 
     emotions = derive_answer(pass_b)
-    assert_schema("layer3_emotions", emotions)
-    audit_emotions = audit_layer3(pass_b, emotions)
+    assert_schema("emotion_mapping", emotions)
+    audit_emotions = audit_emotion_mapping(pass_b, emotions)
     audits = [audit_a, audit_b, audit_emotions]
     assert_all_audits_pass(audits)
 
@@ -49,6 +49,6 @@ def run_pipeline(value: Mapping[str, Any]) -> dict[str, Any]:
             "pass_a_scope_lock": pass_a,
             "pass_b_appraisal": pass_b,
         },
-        "layer3_emotions": emotions,
+        "emotion_mapping": emotions,
         "audits": audits,
     }

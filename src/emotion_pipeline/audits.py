@@ -4,7 +4,7 @@ Pass A and Pass B follow the blocking checks of the research run: structure,
 verbatim evidence of 1 to 20 words, every evidence item assigned to exactly one
 scope, scopes ordered by their first evidence item, and frozen scope identity in
 Pass B. Allowed values per variable are enforced by the JSON Schemas in
-``schemas/``. Layer 3 is checked against the fixed emotion map.
+``schemas/``. The emotion mapping is checked against the fixed map.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Any
 
 from .contracts import ContractError, Segment
-from .emotion_scoring import EMOTION_MAP
+from .emotion_mapping import EMOTION_MAP
 
 MAX_QUOTE_WORDS = 20
 
@@ -60,14 +60,14 @@ def audit_pass_b(scope_packet: dict[str, Any], appraisal_packet: dict[str, Any])
     )
 
 
-def audit_layer3(appraisal_packet: dict[str, Any], emotion_packet: dict[str, Any]) -> dict[str, Any]:
-    """Check Layer 3 against the fixed map: identity, primary emotion, anger rule."""
+def audit_emotion_mapping(appraisal_packet: dict[str, Any], emotion_packet: dict[str, Any]) -> dict[str, Any]:
+    """Check the emotion mapping: identity, primary emotion, anger rule."""
 
     records = appraisal_packet.get("scopes", [])
     derived = emotion_packet.get("per_scope", [])
     pairs = list(zip(records, derived))
     return _audit(
-        "layer3_emotions",
+        "emotion_mapping",
         [
             ("scope identity is unchanged", [r.get("scope_id") for r in records] == [d.get("scope_id") for d in derived]),
             ("primary emotion follows the focus map", all(

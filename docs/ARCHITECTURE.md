@@ -13,7 +13,7 @@ frozen scopes
 Pass B: nine appraisal variables per scope            (model in research; stand-in here)
         | validator: one record per scope, same IDs and order, allowed values only
         v
-Layer 3: fixed emotion map in Python                  (identical in research and here)
+Emotion mapping: fixed rules in Python               (identical in research and here)
         | check: primary emotion follows focus, anger only on negative scopes
         v
 emotions present in the answer
@@ -29,9 +29,9 @@ score.
 
 | Step | Research version | This repository |
 | --- | --- | --- |
-| Pass A | Frozen Layer 1 prompt (v3.1), language model | Keyword and clause rules (`layers.py`) |
-| Pass B | Frozen Layer 2 prompt, language model | Keyword rules with codebook defaults (`layers.py`) |
-| Layer 3 | Python emotion map | Same map (`emotion_scoring.py`) |
+| Pass A | Frozen Pass A prompt, language model | Keyword and clause rules (`layers.py`) |
+| Pass B | Frozen Pass B prompt, language model | Keyword rules with codebook defaults (`layers.py`) |
+| Emotion mapping | Python rules | Same map (`emotion_mapping.py`) |
 | Validators | Blocking checks on every output | Same structural checks (`audits.py`, `schemas/`) |
 | Data | Real interview answers, access-restricted | Six synthetic answers (`data/`) |
 
@@ -53,7 +53,7 @@ run and tested without a model or real data. They are not a classifier.
 ## Attaching a model
 
 Replace `pass_a_scope_lock` and `pass_b_appraisal` in `layers.py` with model
-calls that return the same JSON contracts. Keep Layer 3 deterministic and keep
+calls that return the same JSON contracts. Keep the emotion mapping deterministic and keep
 all validators and tests. If a model-backed pass cannot pass the validators,
 fix the prompt or the contract rather than weakening the validator. Freeze and
 hash the prompts before any production run, and validate on a held-out sample

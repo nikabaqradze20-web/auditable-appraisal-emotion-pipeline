@@ -47,9 +47,9 @@ codes the evaluations; it never names an emotion.
 
 | Step | Task | Done by | Output |
 | --- | --- | --- | --- |
-| Pass A | Divide one answer into appraisal scopes: independent evaluative episodes owned by the respondent | Model, frozen prompt | Zero or more scopes, each defined by verbatim evidence of 1-20 words |
-| Pass B | Code nine appraisal variables for every frozen scope | Model, frozen prompt | Focus, agency, time orientation, certainty, coping, norm violation, self-blame, resource depletion, goal relevance |
-| Layer 3 | Derive emotions from the codes | Fixed Python rules | One primary emotion per scope, plus an anger overlay |
+| Pass A | Divide one answer into appraisal scopes: independent evaluative episodes owned by the respondent | Pass A prompt, language model | Zero or more scopes, each defined by verbatim evidence of 1-20 words |
+| Pass B | Code nine appraisal variables for every frozen scope | Pass B prompt, language model | Focus, agency, time orientation, certainty, coping, norm violation, self-blame, resource depletion, goal relevance |
+| Emotion mapping | Derive emotions from the codes | Python rules, no model | One primary emotion per scope, plus an anger overlay |
 
 Each model pass has one narrow task. Pass A never assigns variables and Pass B
 never changes scopes, so errors in dividing answers and errors in coding can be
@@ -107,8 +107,8 @@ not the respondent's evaluation. Step by step: [`docs/TRACEABILITY.md`](docs/TRA
 | | Research version | This repository |
 | --- | --- | --- |
 | Pass A and Pass B | Language model (`claude-opus-4-8`) with frozen, hashed prompts | Deterministic keyword stand-ins |
-| Prompts | Full Layer 1 (v3.1) and Layer 2 prompts | Condensed summaries in `prompts/` |
-| Layer 3 emotion map | Python rules | Same rules |
+| Prompts | Full Pass A and Pass B prompts | Condensed summaries in `prompts/` |
+| Emotion mapping | Python rules | Same rules |
 | Validators | Blocking checks on every output | Same structural checks |
 | Data | 6,028 real answers, access-restricted | Six synthetic answers |
 | Validation | Development, held-out and production re-run (see results) | None: the stand-ins are not a classifier |
@@ -132,7 +132,7 @@ ignored file `demo_output.json`.
 | --- | --- |
 | `prompts/` | Summaries of the Pass A and Pass B prompts and their rules |
 | `schemas/` | JSON Schema contracts for every boundary |
-| `src/emotion_pipeline/` | Stand-in passes, Layer 3 emotion map, validators, schema checks |
+| `src/emotion_pipeline/` | Stand-in passes, emotion mapping, validators, schema checks |
 | `data/` | Synthetic question-answer fixtures |
 | `examples/` | Committed end-to-end trace |
 | `docs/` | Codebook, validation results, architecture, traceability walkthrough |

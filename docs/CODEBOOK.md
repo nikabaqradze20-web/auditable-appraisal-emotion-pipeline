@@ -12,9 +12,9 @@ into English before annotation, so all coding works on the English text.
 
 | Level | Unit | Produced by | Output |
 | --- | --- | --- | --- |
-| Appraisal scope | Respondent answer | Pass A: model, Layer 1 prompt (v3.1) | Zero or more scopes, each defined by verbatim evidence |
-| Appraisal variables | Scope | Pass B: model, Layer 2 prompt (frozen) | Nine coded variables per scope |
-| Emotion labels | Scope | Layer 3: deterministic Python rules | Primary emotion and overlays |
+| Appraisal scope | Respondent answer | Pass A prompt, language model | Zero or more scopes, each defined by verbatim evidence |
+| Appraisal variables | Scope | Pass B prompt, language model | Nine coded variables per scope |
+| Emotion labels | Scope | Emotion mapping, Python rules | Primary emotion and overlays |
 | Not operationalised | - | - | Intensity; emotions outside the map |
 
 Two design rules follow from treating model output as measurement with error:
@@ -38,7 +38,7 @@ results.
 | Goal relevance starts at `medium` | High goal relevance requires an explicit statement |
 | Agency: no attributed cause is `circumstance` | Circumstance covers impersonal causes and evaluations with no stated cause |
 
-## Layer 3: emotion map
+## Emotion mapping
 
 Each focus category maps to one primary emotion. Valence is the side of the
 focus ladder. Bands group emotions with a similar appraisal structure and are

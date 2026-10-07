@@ -1,4 +1,4 @@
-"""Run the synthetic examples through Pass A, Pass B and Layer 3."""
+"""Run the synthetic examples through Pass A, Pass B and the emotion mapping."""
 
 from __future__ import annotations
 

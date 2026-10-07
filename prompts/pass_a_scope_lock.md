@@ -1,4 +1,4 @@
-# Pass A: appraisal scopes and evidence (summary of the Layer 1 prompt)
+# Pass A prompt: appraisal scopes and evidence (summary)
 
 You receive one interviewer question and one respondent answer. Decide how many
 appraisal scopes the answer holds and which words belong to each. Assign no

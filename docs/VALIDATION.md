@@ -169,10 +169,10 @@ measures consistency, not correctness.
 | | Self-blame | 5 and 5 positive scopes, 2 shared: **not reliable, not analysed** |
 | | Resource depletion | 17 and 17 positive scopes, 16 shared |
 | | All nine variables identical | 63.9% |
-| Layer 3 (scopes) | Primary emotion | 89.4%, κ .875 |
+| Emotion mapping (scopes) | Primary emotion | 89.4%, κ .875 |
 | | Emotion band | 93.3%, κ .907 |
 | | Anger overlay | 27 positive scopes in each run, 24 shared, κ ≈ .882 |
-| Layer 3 (answers) | Identical emotion set, all 647 units | **90.0%** [87.6, 92.2], mean J .917 |
+| Emotion mapping (answers) | Identical emotion set, all 647 units | **90.0%** [87.6, 92.2], mean J .917 |
 | | Identical emotion set, units with any emotion | 84.3%, mean J .870 |
 
 Presence of each emotion in an answer (κ): fear/anxiety .877, sadness .934,

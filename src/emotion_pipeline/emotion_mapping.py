@@ -1,4 +1,4 @@
-"""Layer 3: deterministic emotion derivation.
+"""Emotion mapping: deterministic emotion derivation in Python.
 
 This module consumes validated Pass B records. It never reads the evidence text
 and never changes an appraisal code. It follows the emotion map of the research

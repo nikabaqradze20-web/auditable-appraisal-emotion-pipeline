@@ -41,9 +41,9 @@ Pass A returns only the evidence and this grouping. The scopes are then frozen.
 | `s1` | `blocked_goal` | `other` | past, present | certain | `low` | 2 | 0 | false | medium |
 | `s2` | `benefactor` | `other` | present | certain | `high` | 0 | 0 | false | medium |
 
-## Layer 3: emotion map
+## Emotion mapping
 
-Layer 3 reads only the Pass B records:
+The emotion mapping reads only the Pass B records:
 
 ```text
 s1: blocked_goal -> frustration (negative, obstruction band)

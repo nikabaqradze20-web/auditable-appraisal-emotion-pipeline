@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from emotion_pipeline.audits import audit_pass_a, audit_pass_b
 from emotion_pipeline.contracts import ContractError, Segment
-from emotion_pipeline.emotion_scoring import derive_answer
+from emotion_pipeline.emotion_mapping import derive_answer
 from emotion_pipeline.pipeline import run_pipeline
 from emotion_pipeline.schema_validation import validate_schema
 
@@ -45,19 +45,19 @@ class PipelineTests(unittest.TestCase):
 
     def test_pipeline_output_has_three_stages(self):
         result = run_pipeline(self.records[0])
-        self.assertEqual(set(result), {"segment", "passes", "layer3_emotions", "audits"})
+        self.assertEqual(set(result), {"segment", "passes", "emotion_mapping", "audits"})
 
     def test_zero_scopes_is_a_coded_outcome(self):
         result = run_pipeline(self.records[-2])
         self.assertEqual(result["passes"]["pass_a_scope_lock"]["scopes"], [])
         self.assertEqual(result["passes"]["pass_b_appraisal"]["scopes"], [])
-        self.assertEqual(result["layer3_emotions"]["answer_emotions"], [])
+        self.assertEqual(result["emotion_mapping"]["answer_emotions"], [])
 
     def test_scope_identity_is_preserved_across_stages(self):
         result = run_pipeline(self.records[0])
         ids_a = [scope["scope_id"] for scope in result["passes"]["pass_a_scope_lock"]["scopes"]]
         ids_b = [scope["scope_id"] for scope in result["passes"]["pass_b_appraisal"]["scopes"]]
-        ids_3 = [scope["scope_id"] for scope in result["layer3_emotions"]["per_scope"]]
+        ids_3 = [scope["scope_id"] for scope in result["emotion_mapping"]["per_scope"]]
         self.assertEqual(ids_a, ids_b)
         self.assertEqual(ids_a, ids_3)
 
@@ -77,10 +77,10 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(run_pipeline(self.records[0]), expected)
 
     def test_canonical_example_emotions(self):
-        layer3 = run_pipeline(self.records[0])["layer3_emotions"]
-        self.assertEqual(layer3["answer_emotions"], ["frustration", "anger", "gratitude"])
-        self.assertEqual([scope["primary_emotion"] for scope in layer3["per_scope"]], ["frustration", "gratitude"])
-        self.assertEqual(layer3["errors"], [])
+        mapping = run_pipeline(self.records[0])["emotion_mapping"]
+        self.assertEqual(mapping["answer_emotions"], ["frustration", "anger", "gratitude"])
+        self.assertEqual([scope["primary_emotion"] for scope in mapping["per_scope"]], ["frustration", "gratitude"])
+        self.assertEqual(mapping["errors"], [])
 
     def test_every_focus_maps_to_one_primary_emotion(self):
         expected = {

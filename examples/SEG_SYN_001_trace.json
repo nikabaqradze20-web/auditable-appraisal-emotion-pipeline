@@ -88,7 +88,7 @@
       ]
     }
   },
-  "layer3_emotions": {
+  "emotion_mapping": {
     "per_scope": [
       {
         "scope_id": "s1",
@@ -137,7 +137,7 @@
       "issues": []
     },
     {
-      "layer": "layer3_emotions",
+      "layer": "emotion_mapping",
       "status": "pass",
       "issues": []
     }

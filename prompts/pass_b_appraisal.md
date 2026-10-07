@@ -1,4 +1,4 @@
-# Pass B: nine appraisal variables (summary of the Layer 2 prompt)
+# Pass B prompt: nine appraisal variables (summary)
 
 You receive the answer, the interviewer's question, the evidence items and the
 frozen scopes. Code each scope from its own evidence; use the rest of the
