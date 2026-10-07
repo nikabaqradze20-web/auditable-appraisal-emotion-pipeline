@@ -159,6 +159,14 @@ annotation rules and workflow decisions are mine.
   validated instrument, and its keyword rules do not generalise to real
   interviews.
 
+## Data protection
+
+This repository contains no interview material; every example is synthetic. In
+the research version, interview answers were anonymised before annotation, and
+the participants' consent form allowed anonymised quotes to be shared with
+third parties. Interview text is kept in a separate, access-restricted file;
+the analysis tables contain no interview text.
+
 ## Privacy boundary
 
 Do not commit raw transcripts, exports, API responses, names, contact details,
