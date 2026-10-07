@@ -16,9 +16,8 @@ Emotion detection in segments from interview data is difficult because emotions
 are often expressed indirectly, depend on context, and may be mixed within the
 same segment.
 
-The broader research project contains approximately 8,000 interview segments,
-but it does not yet have a sufficiently large set of reliably human-labelled
-segments to train and validate a supervised machine-learning classifier.
+The research project covers approximately 6,000 interview answers, with too
+few human-labelled answers to train a supervised machine-learning classifier.
 
 Large language models provide a practical alternative because they can interpret
 context without requiring a large labelled training set. However, asking a model
@@ -55,20 +54,38 @@ rather than as an opaque end-to-end emotion classifier.
 
 ## Research context
 
-This repository is based on an ongoing research project developing an
-AI-assisted annotation pipeline for approximately 8,000 segments from
-semi-structured interviews.
+This repository is based on a completed research project that annotated
+approximately 6,000 answers from a four-wave panel of semi-structured
+interviews with a two-pass LLM pipeline.
 
-The broader research workflow covers evidence extraction, appraisal coding,
-emotion labelling, and segment-level aggregation. Model outputs are compared
-with manual annotations and repeated model runs to evaluate agreement,
-stability, recurring errors, and the effects of changes to prompts and coding
-rules.
+The research workflow covered evidence extraction and scoping (Pass A),
+appraisal coding (Pass B), deterministic emotion mapping, and answer-level
+aggregation. Model outputs were compared with manual annotations and across
+repeated model runs to evaluate agreement, stability, and recurring errors.
 
 Because the original interview material is sensitive, the public repository
 contains only synthetic fixtures. External model calls are replaced with
 deterministic stand-ins so that the schemas, layer boundaries, audits, and tests
 can be executed without exposing research data.
+
+## Results from the research version
+
+The research version ran Pass A and Pass B as model calls on the full set of
+answers. The prompts were developed on 200 answers from waves 1 to 3 and then
+frozen. Fifty answers from wave 4, never used in development, served as a
+held-out test. All human codes come from one reference coder (the author), who
+coded the held-out answers before seeing any model output.
+
+| Check | Result |
+| --- | --- |
+| Consistency: two runs on identical input | at least 91.6% agreement on every Pass B variable |
+| Held-out: does the answer contain an appraisal? | 94-96% agreement with the human coder (Cohen's kappa .87-.91) |
+| Held-out: emotions derived from the codes | the model found 92-95% of the human coder's emotions and added about one code in ten of its own |
+
+Agreement with the human coder was lowest for agency and goal relevance. Every
+model-human comparison rests on a single human coder, so agreement between two
+human coders was not assessed, and the held-out results rest on a small sample
+with wide intervals.
 
 ## My contribution
 
@@ -104,9 +121,10 @@ process. This project separates the main failure points:
 | Pass B - appraisal coding | locked scopes and evidence | focus, polarity, agency, temporal, certainty, coping, ordinals | scope identity changes or a value is outside the contract |
 | Layer 2 - emotion mapping | validated appraisal codes | per-scope emotions, intensity, and trace | a focus is unknown or scoring errors remain |
 
-The current implementation is a working draft. Intensity modifiers, derived
-emotion gates, and the merged segment profile still require validation against
-a human-coded gold set.
+The public contracts are a simplified version of the research design. The
+research version used a different emotion list and did not score intensity. The
+intensity modifiers, derived emotion gates, and merged segment profile in this
+repository have not been validated against a human-coded gold set.
 
 The built-in evidence splitter uses generic sentence and conjunction rules. The
 canonical example is a teaching fixture, not a set of special-case phrases.
@@ -222,7 +240,7 @@ control and outside the synthetic fixtures. Legacy local artifacts are excluded
 by [`.gitignore`](.gitignore); always inspect Git history before making a
 repository public.
 
-## Attaching a model later
+## Attaching a model
 
 Replace the deterministic Pass A and Pass B stand-ins with model calls that
 return the same JSON contracts. Keep Layer 2 deterministic and keep all audits
