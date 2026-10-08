@@ -1,7 +1,9 @@
 # Validation and production metrics
 
-All figures come from the research version: the frozen Pass A and Pass B
-prompts run with a language model on the full set of interview answers. The
+All figures come from the research version, in which the frozen Pass A and
+Pass B prompts ran with a language model: on two human-coded validation
+samples (200 development and 50 held-out answers) and on a re-run of 647
+production units. The
 code in this repository uses deterministic stand-ins and has not been
 validated. All model-human comparisons rest on **one human reference coder**
 (the author); agreement between two human coders was not assessed.
@@ -200,7 +202,7 @@ and liking/enjoyment vs contentment.
 | The model splits answers more finely | 167 and 166 scopes vs 148 (+12-13%) | Outcomes record presence per answer, not scope counts |
 | Some emotions coded more often | Fear, frustration and hope slightly higher, contentment slightly lower | Results read as changes; per-wave check against human coding |
 | Goal relevance rated higher | 16 of 18 development disagreements | Not in the emotion map; read for change, not level |
-| Agency agreement lower in later waves | W1 93-95%, W2 85%, W3 79-81%, W4 81% of matched scopes | The main attribution finding is, if anything, understated |
+| Agency agreement lower in later waves | W1 93-95%, W2 85%, W3 79-81%, W4 81% of matched scopes | Part of the change in attribution may be measurement; the fall in enemy-side attribution is, if anything, understated |
 | Circumstance paired with an agent | About 2-3% of model scopes; 71 in production | Paired circumstance dropped |
 | Long answers less consistent | Identical emotion set in 58.8% of 300+ token answers | Answer length controlled; check without 300+ word answers |
 

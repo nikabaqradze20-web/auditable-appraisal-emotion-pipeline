@@ -2,9 +2,9 @@
 
 A two-pass LLM annotation pipeline that codes how respondents evaluate
 situations in interview answers, then derives emotions from those codes with
-fixed rules. The research version annotated 6,028 answers from a four-wave
-qualitative interview panel and was validated against human coding on
-development and held-out data.
+fixed rules. The research version annotated 6,410 units (6,028 valid answers)
+from a four-wave qualitative interview panel and was validated against human
+coding on development and held-out data.
 
 This repository is a public-safe reference implementation of that design. It
 contains the output contracts, validators, emotion map, codebook summaries and
